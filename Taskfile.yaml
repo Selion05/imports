@@ -1,0 +1,14 @@
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - task -l
+  simple:
+    desc: run simple var/simple.xlsx
+    cmds:
+      - cargo +nightly run simple var/simple.xlsx
+  build:
+    desc: run +nightly build
+    cmds:
+      - cargo +nightly build
