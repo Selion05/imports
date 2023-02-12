@@ -12,3 +12,13 @@ tasks:
     desc: run +nightly build
     cmds:
       - cargo +nightly build
+  release:
+    desc: run +nightly build
+    cmds:
+      - cargo +nightly build --release
+      - cp target/release/importsctl ../admin/bin/importsctl
+  release-enelteco:
+    desc: run +nightly build
+    cmds:
+      - cargo build --release --target x86_64-unknown-linux-musl
+      - cp target/x86_64-unknown-linux-musl/release/importsctl ../admin/bin/importsctl
