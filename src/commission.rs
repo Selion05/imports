@@ -274,3 +274,30 @@ fn transform_row(
 
     Ok(r)
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::commission::run;
+
+    #[test]
+    fn test_get_column_map_success_with_ordered_columns() {
+        let result = run("var/commission.xlsx");
+        assert!(result.is_ok());
+
+        let result = result.unwrap();
+
+        let rows = result.get("123456789");
+
+        assert!(rows.is_some());
+
+        let rows = rows.unwrap();
+
+        assert_eq!(rows.len(), 4);
+
+        // todo parse currency as string not as float :/
+        assert_eq!(rows[0].net_amount, 13.35092);
+        assert_eq!(rows[1].net_amount, 8.0);
+        assert_eq!(rows[2].net_amount, 87.1299);
+        assert_eq!(rows[3].net_amount, 159.8535);
+    }
+}

@@ -2,13 +2,12 @@ use crate::ImportError;
 use calamine::{open_workbook_auto, DataType, Reader};
 use chrono::NaiveDate;
 use serde::Serialize;
-use std::fmt::Debug;
 use std::collections::HashMap;
+use std::fmt::Debug;
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Row {
-
     read_unit: String,
     price_amount: f64,
     tariff: String,
@@ -28,10 +27,8 @@ pub struct Row {
     meterpoint: String,
 }
 
-
 #[derive(Debug)]
 enum Column {
-
     ReadUnit,
     PriceAmount,
     Tariff,
@@ -64,10 +61,9 @@ impl Column {
 }
 
 fn get_column_map(headers: Vec<String>) -> Result<Vec<usize>, ImportError> {
-    let mut map: Vec<Option<usize>> = vec![None;  17];
+    let mut map: Vec<Option<usize>> = vec![None; 17];
     for (i, header) in headers.iter().enumerate() {
         match header.to_lowercase().trim() {
-            
             "ableinh." => {
                 map[<Column as Into<usize>>::into(Column::ReadUnit)] = Some(i);
             }
@@ -134,9 +130,6 @@ fn get_column_map(headers: Vec<String>) -> Result<Vec<usize>, ImportError> {
     Ok(map.into_iter().flatten().collect())
 }
 
-
-
-
 pub fn run<P: AsRef<std::path::Path>>(path: P) -> Result<HashMap<String, Vec<Row>>, ImportError> {
     let mut excel = open_workbook_auto(path)?;
 
@@ -147,27 +140,27 @@ pub fn run<P: AsRef<std::path::Path>>(path: P) -> Result<HashMap<String, Vec<Row
     let sheet_name = sheet_names.first().unwrap();
 
     let sheet = excel
-            .worksheet_range(sheet_name)
-            .ok_or_else(|| ImportError::SheetNotFound(sheet_name.to_string()))??;
+        .worksheet_range(sheet_name)
+        .ok_or_else(|| ImportError::SheetNotFound(sheet_name.to_string()))??;
 
     let headers: Vec<String> = sheet
-            .rows()
-            .nth(header_row)
-            .unwrap()
-            .iter()
-            .map(|header_cell| {
-                return match header_cell.get_string() {
-                    None => String::from(""),
-                    Some(v) => v.to_string(),
-                };
-            })
-            .collect();
+        .rows()
+        .nth(header_row)
+        .unwrap()
+        .iter()
+        .map(|header_cell| {
+            return match header_cell.get_string() {
+                None => String::from(""),
+                Some(v) => v.to_string(),
+            };
+        })
+        .collect();
     let column_map: Vec<usize> = get_column_map(headers)?;
 
     let mut groups: HashMap<String, Vec<Row>> = HashMap::new();
     for (i, row) in sheet.rows().enumerate().skip(data_start_row) {
         let r = transform_row(&column_map, row, i)?;
-        let k = r.supplier_customer_id.clone();
+        let k = r.invoice_id.clone();
         if !groups.contains_key(&*k) {
             groups.insert(k.clone(), Vec::new());
         }
@@ -184,146 +177,142 @@ fn transform_row(
     row_number: usize,
 ) -> Result<Row, ImportError> {
     let r = Row {
-
-        
-
-        
         read_unit: row[column_map[Column::ReadUnit.usize()]]
-                .to_string().trim().to_string(),
-        
+            .to_string()
+            .trim()
+            .to_string(),
 
-        
         price_amount: row[column_map[Column::PriceAmount.usize()]]
-                .get_float()
-        
-                .ok_or_else(|| {
-                    ImportError::ValueError(
-                        row_number,
-                        "Preisbetrag".to_string(),
-                        "Cell has no value".to_string(),
-                    )
-                })?,
+            .get_float()
+            .ok_or_else(|| {
+                ImportError::ValueError(
+                    row_number,
+                    "Preisbetrag".to_string(),
+                    "Cell has no value".to_string(),
+                )
+            })?,
 
-        
-
-        
         tariff: row[column_map[Column::Tariff.usize()]]
-                .to_string().trim().to_string(),
-        
+            .to_string()
+            .trim()
+            .to_string(),
 
-        
         net_amount: row[column_map[Column::NetAmount.usize()]]
-                .get_float()
-        
-                .ok_or_else(|| {
-                    ImportError::ValueError(
-                        row_number,
-                        "Nettobetrag".to_string(),
-                        "Cell has no value".to_string(),
-                    )
-                })?,
+            .get_float()
+            .ok_or_else(|| {
+                ImportError::ValueError(
+                    row_number,
+                    "Nettobetrag".to_string(),
+                    "Cell has no value".to_string(),
+                )
+            })?,
 
-        
-
-        
         currency: row[column_map[Column::Currency.usize()]]
-                .to_string().trim().to_string(),
-        
+            .to_string()
+            .trim()
+            .to_string(),
 
-        
         billing_amount: row[column_map[Column::BillingAmount.usize()]]
-                .get_float()
-        
-                .ok_or_else(|| {
-                    ImportError::ValueError(
-                        row_number,
-                        "Abrmenge".to_string(),
-                        "Cell has no value".to_string(),
-                    )
-                })?,
+            .get_float()
+            .ok_or_else(|| {
+                ImportError::ValueError(
+                    row_number,
+                    "Abrmenge".to_string(),
+                    "Cell has no value".to_string(),
+                )
+            })?,
 
-        
-
-        
         line_id: row[column_map[Column::LineId.usize()]]
-                .to_string().trim().to_string(),
-        
+            .to_string()
+            .trim()
+            .to_string(),
 
-        
         energy_type: row[column_map[Column::EnergyType.usize()]]
-                .to_string().trim().to_string(),
-        
+            .to_string()
+            .trim()
+            .to_string(),
 
-        
         ba: row[column_map[Column::Ba.usize()]]
-                .to_string().trim().to_string(),
-        
+            .to_string()
+            .trim()
+            .to_string(),
 
-        
+        valid_from: row[column_map[Column::ValidFrom.usize()]]
+            .as_date()
+            .ok_or_else(|| {
+                ImportError::ValueError(
+                    row_number,
+                    "Gültig ab".to_string(),
+                    "Cell has no value".to_string(),
+                )
+            })?,
 
-        valid_from: row[column_map[Column::ValidFrom.usize()]].as_date()
-        
-        .ok_or_else(|| {
-            ImportError::ValueError(
-                row_number,
-                "Gültig ab".to_string(),
-                "Cell has no value".to_string(),
-            )
-        })?,
-        
-
-        
         contract: row[column_map[Column::Contract.usize()]]
-                .to_string().trim().to_string(),
-        
+            .to_string()
+            .trim()
+            .to_string(),
 
-        
+        entry_date: row[column_map[Column::EntryDate.usize()]]
+            .as_date()
+            .ok_or_else(|| {
+                ImportError::ValueError(
+                    row_number,
+                    "Buch.dat.".to_string(),
+                    "Cell has no value".to_string(),
+                )
+            })?,
 
-        entry_date: row[column_map[Column::EntryDate.usize()]].as_date()
-        
-        .ok_or_else(|| {
-            ImportError::ValueError(
-                row_number,
-                "Buch.dat.".to_string(),
-                "Cell has no value".to_string(),
-            )
-        })?,
-        
-
-        
         invoice_id: row[column_map[Column::InvoiceId.usize()]]
-                .to_string().trim().to_string(),
-        
+            .to_string()
+            .trim()
+            .to_string(),
 
-        
         supplier_customer_id: row[column_map[Column::SupplierCustomerId.usize()]]
-                .to_string().trim().to_string(),
-        
+            .to_string()
+            .trim()
+            .to_string(),
 
-        
         contract_account: row[column_map[Column::ContractAccount.usize()]]
-                .to_string().trim().to_string(),
-        
+            .to_string()
+            .trim()
+            .to_string(),
 
-        
+        valid_to: row[column_map[Column::ValidTo.usize()]]
+            .as_date()
+            .ok_or_else(|| {
+                ImportError::ValueError(
+                    row_number,
+                    "Gültig bis".to_string(),
+                    "Cell has no value".to_string(),
+                )
+            })?,
 
-        valid_to: row[column_map[Column::ValidTo.usize()]].as_date()
-        
-        .ok_or_else(|| {
-            ImportError::ValueError(
-                row_number,
-                "Gültig bis".to_string(),
-                "Cell has no value".to_string(),
-            )
-        })?,
-        
-
-        
         meterpoint: row[column_map[Column::Meterpoint.usize()]]
-                .to_string().trim().to_string(),
-        
-
+            .to_string()
+            .trim()
+            .to_string(),
     };
 
     Ok(r)
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::sap::run;
+
+    #[test]
+    fn test_get_column_map_success_with_ordered_columns() {
+        let result = run("var/sap.xlsx");
+        assert!(result.is_ok());
+
+        let result = result.unwrap();
+
+        let rows = result.get("310651234");
+
+        assert!(rows.is_some());
+
+        let rows = rows.unwrap();
+
+        assert_eq!(rows.len(), 4);
+    }
 }
