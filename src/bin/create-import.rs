@@ -77,6 +77,8 @@ impl From<ColumnDefinition> for Column {
 #[derive(Debug, Deserialize, Serialize)]
 struct TemplateContext {
     columns: Vec<Column>,
+    header_row_number: usize,
+    data_start_row_number: usize,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -96,7 +98,11 @@ fn main() {
     let file = File::open(path).unwrap();
     let definition: Definition = serde_json::from_reader(file).unwrap();
 
-    let mut data = TemplateContext { columns: vec![] };
+    let mut data = TemplateContext {
+        columns: vec![],
+        header_row_number: definition.header_row_number,
+        data_start_row_number: definition.data_start_row_number,
+    };
 
     for (key, column) in definition.columns.iter() {
         // todo stupido

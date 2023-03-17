@@ -70,8 +70,8 @@ pub fn run<P: AsRef<std::path::Path>>(path: P) -> Result<HashMap<String, Vec<Row
     let mut excel = open_workbook_auto(path)?;
 
     // todo input
-    let header_row = 0;
-    let data_start_row = 1;
+    let header_row = {{ header_row_number }};
+    let data_start_row =  {{ data_start_row_number }};
     let sheet_names = excel.sheet_names().to_vec();
     let sheet_name = sheet_names.first().unwrap();
 
