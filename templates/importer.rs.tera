@@ -41,6 +41,12 @@ fn get_column_map(headers: Vec<String>) -> Result<Vec<usize>, ImportError> {
             "{{ value.match_string }}" => {
                 map[<Column as Into<usize>>::into(Column::{{ value.enum_name }})] = Some(i);
             }
+            {% if value.match_string2 %}
+
+            "{{ value.match_string2 }}" => {
+                map[<Column as Into<usize>>::into(Column::{{ value.enum_name }})] = Some(i);
+            }
+            {% endif %}
             {%- endfor %}
             _ => return Err(ImportError::UnknownHeader(header.clone())),
         }
@@ -139,6 +145,8 @@ fn transform_row(
         {% else %}
         // todo  implement something for {{ value.kind }}
         {% endif %}
+
+
         {%- endfor %}
 
     };

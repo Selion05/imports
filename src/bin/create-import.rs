@@ -49,19 +49,26 @@ struct Column {
     type_hint: String,
     enum_name: String,
     match_string: String,
+    match_string2: String,
     optional: bool,
 }
 
 impl From<ColumnDefinition> for Column {
     fn from(d: ColumnDefinition) -> Self {
         let type_hint = d.type_hint();
+        let mut field_name = d.key.to_case(Case::Snake);
+        // todo quick fix...
+        if field_name == "type".to_string() {
+            field_name = "_type".to_string();
+        }
         Column {
-            field_name: d.key.to_case(Case::Snake),
+            field_name: field_name,
             header_name: d.header_name.clone(),
             type_hint: type_hint,
             kind: d.kind,
             enum_name: d.key.to_case(Case::Pascal),
             match_string: d.header_name.to_lowercase().trim().to_string(),
+            match_string2: d.header_name2.to_lowercase().trim().to_string(),
             optional: d.optional,
         }
     }
@@ -74,8 +81,6 @@ struct TemplateContext {
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Definition {
-    #[serde(rename = "headerCheckMaxRows")]
-    header_check_max_rows: usize,
     #[serde(default)]
     #[serde(rename = "dataStartRowNumber")]
     data_start_row_number: usize,

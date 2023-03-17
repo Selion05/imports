@@ -1,9 +1,16 @@
 mod commission;
+mod contact_attempt;
+mod customer_tag;
 mod datentraeger;
 mod generated;
+mod kam;
 mod sap;
 mod simple;
 
+use chrono::{DateTime, NaiveDateTime, Utc};
+use regex::Regex;
+use serde::Serialize;
+use std::collections::HashMap;
 use std::env;
 use std::fmt::{Debug, Display, Formatter};
 use std::fs::File;
@@ -19,6 +26,13 @@ pub enum ImportError {
     UnknownHeader(String),
     MissingHeader(String),
     IoError(std::io::Error),
+    Error(String),
+}
+
+#[derive(Debug, Serialize)]
+struct Schema<T: Serialize> {
+    messages: Vec<T>,
+    meta: HashMap<String, String>,
 }
 
 impl Display for ImportError {
@@ -31,13 +45,16 @@ impl Display for ImportError {
                 write!(f, "Could not find sheet with name {}", name)
             }
             ImportError::ValueError(ref i, ref name, ref message) => {
-                write!(f, "{} at row {} column {}", message, i, name)
+                write!(f, "Value '{}' at row {} column {}", message, i, name)
             }
             ImportError::UnknownHeader(ref header) => {
                 write!(f, "Unknown header name {} found", header)
             }
             ImportError::MissingHeader(ref header) => {
                 write!(f, "Missing header name {}", header)
+            }
+            ImportError::Error(ref err) => {
+                write!(f, "{}", err)
             }
             ImportError::IoError(ref err) => std::fmt::Display::fmt(&err, f),
         }
@@ -82,18 +99,91 @@ fn run(excel_type: String, path: String) -> Result<(), ImportError> {
         }
         "mye_datentraeger" => {
             let rows = datentraeger::run(path)?;
-
-            serde_json::to_writer(json_writer, &rows).map_err(|err| ImportError::Serialize(err))?;
+            let mut meta: HashMap<String, String> = HashMap::new();
+            meta.insert("created_at".to_string(), Utc::now().to_string());
+            let s = Schema {
+                messages: rows.values().collect(),
+                meta,
+            };
+            serde_json::to_writer(json_writer, &s).map_err(|err| ImportError::Serialize(err))?;
         }
         "mye_commission" => {
-            let rows = commission::run(path)?;
+            let rows = commission::run(path.clone())?;
 
-            serde_json::to_writer(json_writer, &rows).map_err(|err| ImportError::Serialize(err))?;
+            let mut meta: HashMap<String, String> = HashMap::new();
+            meta.insert("created_at".to_string(), Utc::now().to_string());
+
+            let re = Regex::new(r".*commissions-enelteco-(?P<timeframe>[0-9]{4}-[0-9]{2})\.xlsx?")
+                .unwrap();
+
+            let timeframe = re.captures(path.as_str()).and_then(|cap| {
+                cap.name("timeframe")
+                    .map(|timeframe| timeframe.as_str().to_string())
+            });
+
+            match timeframe {
+                Some(timeframe) => {
+                    meta.insert("timeframe".to_string(), timeframe);
+                }
+                None => {
+                    return Err(ImportError::Error(
+                        "Could not extract timeframe from path".to_string(),
+                    ))
+                }
+            }
+
+            let s = Schema {
+                messages: rows.values().collect(),
+                meta,
+            };
+
+            serde_json::to_writer(json_writer, &s).map_err(|err| ImportError::Serialize(err))?;
         }
         "mye_sap" => {
             let rows = sap::run(path)?;
 
-            serde_json::to_writer(json_writer, &rows).map_err(|err| ImportError::Serialize(err))?;
+            let mut meta: HashMap<String, String> = HashMap::new();
+            meta.insert("created_at".to_string(), Utc::now().to_string());
+            let s = Schema {
+                messages: rows.values().collect(),
+                meta,
+            };
+
+            serde_json::to_writer(json_writer, &s).map_err(|err| ImportError::Serialize(err))?;
+        }
+        "mye_kam" => {
+            let rows = kam::run(path)?;
+
+            let mut meta: HashMap<String, String> = HashMap::new();
+            meta.insert("created_at".to_string(), Utc::now().to_string());
+            let s = Schema {
+                messages: rows.values().collect(),
+                meta,
+            };
+
+            serde_json::to_writer(json_writer, &s).map_err(|err| ImportError::Serialize(err))?;
+        }
+        "customer_tag" => {
+            let rows = customer_tag::run(path)?;
+
+            let mut meta: HashMap<String, String> = HashMap::new();
+            meta.insert("created_at".to_string(), Utc::now().to_string());
+            let s = Schema {
+                messages: rows.values().collect(),
+                meta,
+            };
+            serde_json::to_writer(json_writer, &s).map_err(|err| ImportError::Serialize(err))?;
+        }
+        "contact_attempt" => {
+            let rows = contact_attempt::run(path)?;
+
+            let mut meta: HashMap<String, String> = HashMap::new();
+            meta.insert("created_at".to_string(), Utc::now().to_string());
+            let s = Schema {
+                messages: rows.values().collect(),
+                meta,
+            };
+            serde_json::to_writer(json_writer, &s).map_err(|err| ImportError::Serialize(err))?;
         }
         _ => Err(ImportError::UnknownImport(excel_type))?,
     }
