@@ -8,6 +8,20 @@ use std::fs::File;
 use tera::Context;
 use tera::Tera;
 
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+enum Kind {
+    #[serde(rename = "date")]
+    Date,
+    #[serde(rename = "time")]
+    Time,
+    #[serde(rename = "string")]
+    String,
+    #[serde(rename = "float")]
+    Float,
+    #[serde(rename = "enum")]
+    Enum,
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 struct ColumnDefinition {
     #[serde(rename = "name")]
@@ -16,7 +30,7 @@ struct ColumnDefinition {
     #[serde(default)]
     header_name2: String,
     #[serde(rename = "type")]
-    kind: String,
+    kind: Kind,
     #[serde(default)]
     optional: bool,
     #[serde(default)]
@@ -27,18 +41,18 @@ struct ColumnDefinition {
 
 impl ColumnDefinition {
     fn type_hint(&self) -> String {
-        let mut t = match self.kind.as_str() {
-            "date" => {
+        let mut t = match self.kind {
+            Kind::Date => {
                 return if self.optional {
                     "Option<NaiveDate>".to_string()
                 } else {
                     "NaiveDate".to_string()
                 }
             }
-            "time" => "NaiveTime".to_string(),
-            "float" => "f64".to_string(),
-            "string" => "String".to_string(),
-            "enum" => self
+            Kind::Time => "NaiveTime".to_string(),
+            Kind::Float => "f64".to_string(),
+            Kind::String => "String".to_string(),
+            Kind::Enum => self
                 .enum_
                 .clone()
                 .expect(&format!("could not get enum path for {}", self.key))
@@ -46,9 +60,6 @@ impl ColumnDefinition {
                 .last()
                 .expect(&format!("could not get enum name for {}", self.key))
                 .to_string(),
-            _ => {
-                panic!("unknown type {}", self.kind)
-            }
         };
 
         if self.optional {
@@ -62,7 +73,7 @@ impl ColumnDefinition {
 struct Column {
     field_name: String,
     header_name: String,
-    kind: String,
+    kind: Kind,
     type_hint: String,
     enum_name: String,
     enum_: Option<String>,
@@ -84,7 +95,7 @@ impl From<ColumnDefinition> for Column {
 
         let mut e: Option<String> = None;
         let mut enum_mod: Option<String> = None;
-        if d.kind == "enum" {
+        if d.kind == Kind::Enum {
             e = Some(
                 d.enum_
                     .clone()
@@ -128,6 +139,7 @@ struct TemplateContext {
     header_row_number: usize,
     data_start_row_number: usize,
     group_key: String,
+    kind: Kind,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -158,7 +170,7 @@ fn main() {
         let c = ColumnDefinition {
             header_name: column.header_name.to_string(),
             header_name2: column.header_name2.to_string(),
-            kind: column.kind.to_string(),
+            kind: column.kind.clone(),
             optional: column.optional,
             key: key.to_string(),
             enum_: column.enum_.clone(),
@@ -166,13 +178,13 @@ fn main() {
 
         let column2 = Column::from(c);
 
-        match column2.kind.as_str() {
-            "enum" => {
+        match column2.kind {
+            Kind::Enum => {
                 modules.push(column2.enum_mod.clone().unwrap());
                 uses.push(column2.enum_path.clone().unwrap());
             }
-            "date" => uses.push("chrono::NaiveDate".to_string()),
-            "time" => uses.push("chrono::NaiveTime".to_string()),
+            Kind::Date => uses.push("chrono::NaiveDate".to_string()),
+            Kind::Time => uses.push("chrono::NaiveTime".to_string()),
             _ => {}
         }
 
@@ -191,6 +203,7 @@ fn main() {
         group_key: definition.group_key.to_case(Case::Snake).trim().to_string(),
         modules,
         uses,
+        kind: Kind::String,
     };
 
     let tera = match Tera::new("templates/**/*.tera") {
