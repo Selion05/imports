@@ -1,53 +1,55 @@
+#[cfg(test)]
+mod tests;
+
 use crate::ImportError;
 use calamine::{open_workbook_auto, DataType, Reader};
-use chrono::NaiveDate;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::fmt::Debug;
 
-#[cfg(test)]
-mod tests;
+use chrono::NaiveDate;
+
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Row {
-    read_unit: String,
-    price_amount: f64,
-    tariff: String,
-    net_amount: f64,
-    currency: String,
-    billing_amount: f64,
-    line_id: String,
-    energy_type: String,
     ba: String,
-    valid_from: NaiveDate,
+    billing_amount: f64,
     contract: String,
+    contract_account: String,
+    currency: String,
+    energy_type: String,
     entry_date: NaiveDate,
     invoice_id: String,
-    supplier_customer_id: String,
-    contract_account: String,
-    valid_to: NaiveDate,
+    line_id: String,
     meterpoint: String,
+    net_amount: f64,
+    price_amount: f64,
+    read_unit: String,
+    supplier_customer_id: String,
+    tariff: String,
+    valid_from: NaiveDate,
+    valid_to: NaiveDate,
 }
 
 #[derive(Debug)]
 enum Column {
-    ReadUnit,
-    PriceAmount,
-    Tariff,
-    NetAmount,
-    Currency,
-    BillingAmount,
-    LineId,
-    EnergyType,
     Ba,
-    ValidFrom,
+    BillingAmount,
     Contract,
+    ContractAccount,
+    Currency,
+    EnergyType,
     EntryDate,
     InvoiceId,
-    SupplierCustomerId,
-    ContractAccount,
-    ValidTo,
+    LineId,
     Meterpoint,
+    NetAmount,
+    PriceAmount,
+    ReadUnit,
+    SupplierCustomerId,
+    Tariff,
+    ValidFrom,
+    ValidTo,
 }
 
 impl Into<usize> for Column {
@@ -66,57 +68,74 @@ fn get_column_map(headers: Vec<String>) -> Result<Vec<usize>, ImportError> {
     let mut map: Vec<Option<usize>> = vec![None; 17];
     for (i, header) in headers.iter().enumerate() {
         match header.to_lowercase().trim() {
-            "ableinh." => {
-                map[<Column as Into<usize>>::into(Column::ReadUnit)] = Some(i);
-            }
-            "preisbetrag" => {
-                map[<Column as Into<usize>>::into(Column::PriceAmount)] = Some(i);
-            }
-            "tariftyp" => {
-                map[<Column as Into<usize>>::into(Column::Tariff)] = Some(i);
-            }
-            "nettobetrag" => {
-                map[<Column as Into<usize>>::into(Column::NetAmount)] = Some(i);
-            }
-            "twährg" => {
-                map[<Column as Into<usize>>::into(Column::Currency)] = Some(i);
-            }
-            "abrmenge" => {
-                map[<Column as Into<usize>>::into(Column::BillingAmount)] = Some(i);
-            }
-            "bart" => {
-                map[<Column as Into<usize>>::into(Column::LineId)] = Some(i);
-            }
-            "sp" => {
-                map[<Column as Into<usize>>::into(Column::EnergyType)] = Some(i);
-            }
             "ba" => {
                 map[<Column as Into<usize>>::into(Column::Ba)] = Some(i);
             }
-            "gültig ab" => {
-                map[<Column as Into<usize>>::into(Column::ValidFrom)] = Some(i);
+
+            "abrmenge" => {
+                map[<Column as Into<usize>>::into(Column::BillingAmount)] = Some(i);
             }
+
             "vertrag" => {
                 map[<Column as Into<usize>>::into(Column::Contract)] = Some(i);
             }
-            "buch.dat." => {
-                map[<Column as Into<usize>>::into(Column::EntryDate)] = Some(i);
-            }
-            "druckbeleg" => {
-                map[<Column as Into<usize>>::into(Column::InvoiceId)] = Some(i);
-            }
-            "geschäftspartner" => {
-                map[<Column as Into<usize>>::into(Column::SupplierCustomerId)] = Some(i);
-            }
+
             "vertragskont" => {
                 map[<Column as Into<usize>>::into(Column::ContractAccount)] = Some(i);
             }
-            "gültig bis" => {
-                map[<Column as Into<usize>>::into(Column::ValidTo)] = Some(i);
+
+            "twährg" => {
+                map[<Column as Into<usize>>::into(Column::Currency)] = Some(i);
             }
+
+            "sp" => {
+                map[<Column as Into<usize>>::into(Column::EnergyType)] = Some(i);
+            }
+
+            "buch.dat." => {
+                map[<Column as Into<usize>>::into(Column::EntryDate)] = Some(i);
+            }
+
+            "druckbeleg" => {
+                map[<Column as Into<usize>>::into(Column::InvoiceId)] = Some(i);
+            }
+
+            "bart" => {
+                map[<Column as Into<usize>>::into(Column::LineId)] = Some(i);
+            }
+
             "zp" => {
                 map[<Column as Into<usize>>::into(Column::Meterpoint)] = Some(i);
             }
+
+            "nettobetrag" => {
+                map[<Column as Into<usize>>::into(Column::NetAmount)] = Some(i);
+            }
+
+            "preisbetrag" => {
+                map[<Column as Into<usize>>::into(Column::PriceAmount)] = Some(i);
+            }
+
+            "ableinh." => {
+                map[<Column as Into<usize>>::into(Column::ReadUnit)] = Some(i);
+            }
+
+            "geschäftspartner" => {
+                map[<Column as Into<usize>>::into(Column::SupplierCustomerId)] = Some(i);
+            }
+
+            "tariftyp" => {
+                map[<Column as Into<usize>>::into(Column::Tariff)] = Some(i);
+            }
+
+            "gültig ab" => {
+                map[<Column as Into<usize>>::into(Column::ValidFrom)] = Some(i);
+            }
+
+            "gültig bis" => {
+                map[<Column as Into<usize>>::into(Column::ValidTo)] = Some(i);
+            }
+
             _ => return Err(ImportError::UnknownHeader(header.clone())),
         }
     }
@@ -167,7 +186,6 @@ pub fn run<P: AsRef<std::path::Path>>(path: P) -> Result<HashMap<String, Vec<Row
             groups.insert(k.clone(), Vec::new());
         }
         groups.get_mut(&*k).unwrap().push(r);
-        // rows.push(r);
     }
 
     Ok(groups)
@@ -179,37 +197,7 @@ fn transform_row(
     row_number: usize,
 ) -> Result<Row, ImportError> {
     let r = Row {
-        read_unit: row[column_map[Column::ReadUnit.usize()]]
-            .to_string()
-            .trim()
-            .to_string(),
-
-        price_amount: row[column_map[Column::PriceAmount.usize()]]
-            .get_float()
-            .ok_or_else(|| {
-                ImportError::ValueError(
-                    row_number,
-                    "Preisbetrag".to_string(),
-                    "Cell has no value".to_string(),
-                )
-            })?,
-
-        tariff: row[column_map[Column::Tariff.usize()]]
-            .to_string()
-            .trim()
-            .to_string(),
-
-        net_amount: row[column_map[Column::NetAmount.usize()]]
-            .get_float()
-            .ok_or_else(|| {
-                ImportError::ValueError(
-                    row_number,
-                    "Nettobetrag".to_string(),
-                    "Cell has no value".to_string(),
-                )
-            })?,
-
-        currency: row[column_map[Column::Currency.usize()]]
+        ba: row[column_map[Column::Ba.usize()]]
             .to_string()
             .trim()
             .to_string(),
@@ -224,32 +212,22 @@ fn transform_row(
                 )
             })?,
 
-        line_id: row[column_map[Column::LineId.usize()]]
+        contract: row[column_map[Column::Contract.usize()]]
+            .to_string()
+            .trim()
+            .to_string(),
+
+        contract_account: row[column_map[Column::ContractAccount.usize()]]
+            .to_string()
+            .trim()
+            .to_string(),
+
+        currency: row[column_map[Column::Currency.usize()]]
             .to_string()
             .trim()
             .to_string(),
 
         energy_type: row[column_map[Column::EnergyType.usize()]]
-            .to_string()
-            .trim()
-            .to_string(),
-
-        ba: row[column_map[Column::Ba.usize()]]
-            .to_string()
-            .trim()
-            .to_string(),
-
-        valid_from: row[column_map[Column::ValidFrom.usize()]]
-            .as_date()
-            .ok_or_else(|| {
-                ImportError::ValueError(
-                    row_number,
-                    "Gültig ab".to_string(),
-                    "Cell has no value".to_string(),
-                )
-            })?,
-
-        contract: row[column_map[Column::Contract.usize()]]
             .to_string()
             .trim()
             .to_string(),
@@ -269,15 +247,60 @@ fn transform_row(
             .trim()
             .to_string(),
 
+        line_id: row[column_map[Column::LineId.usize()]]
+            .to_string()
+            .trim()
+            .to_string(),
+
+        meterpoint: row[column_map[Column::Meterpoint.usize()]]
+            .to_string()
+            .trim()
+            .to_string(),
+
+        net_amount: row[column_map[Column::NetAmount.usize()]]
+            .get_float()
+            .ok_or_else(|| {
+                ImportError::ValueError(
+                    row_number,
+                    "Nettobetrag".to_string(),
+                    "Cell has no value".to_string(),
+                )
+            })?,
+
+        price_amount: row[column_map[Column::PriceAmount.usize()]]
+            .get_float()
+            .ok_or_else(|| {
+                ImportError::ValueError(
+                    row_number,
+                    "Preisbetrag".to_string(),
+                    "Cell has no value".to_string(),
+                )
+            })?,
+
+        read_unit: row[column_map[Column::ReadUnit.usize()]]
+            .to_string()
+            .trim()
+            .to_string(),
+
         supplier_customer_id: row[column_map[Column::SupplierCustomerId.usize()]]
             .to_string()
             .trim()
             .to_string(),
 
-        contract_account: row[column_map[Column::ContractAccount.usize()]]
+        tariff: row[column_map[Column::Tariff.usize()]]
             .to_string()
             .trim()
             .to_string(),
+
+        valid_from: row[column_map[Column::ValidFrom.usize()]]
+            .as_date()
+            .ok_or_else(|| {
+                ImportError::ValueError(
+                    row_number,
+                    "Gültig ab".to_string(),
+                    "Cell has no value".to_string(),
+                )
+            })?,
 
         valid_to: row[column_map[Column::ValidTo.usize()]]
             .as_date()
@@ -288,11 +311,6 @@ fn transform_row(
                     "Cell has no value".to_string(),
                 )
             })?,
-
-        meterpoint: row[column_map[Column::Meterpoint.usize()]]
-            .to_string()
-            .trim()
-            .to_string(),
     };
 
     Ok(r)

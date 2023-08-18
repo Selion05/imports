@@ -1,5 +1,7 @@
 {
-  "groupKey": "supplierCustomerId",
+  "groupKey": "invoiceId",
+  "headerRowNumber": 1,
+  "dataStartRowNumber": 2,
   "columns": {
     "ba": {
       "name": "BA",
