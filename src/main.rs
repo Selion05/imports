@@ -2,10 +2,8 @@ mod commission;
 mod contact_attempt;
 mod customer_tag;
 mod datentraeger;
-mod generated;
 mod kam;
 mod sap;
-mod simple;
 
 use chrono::Utc;
 use regex::Regex;
@@ -86,17 +84,6 @@ fn run(excel_type: String, path: String) -> Result<(), ImportError> {
     let json_writer = &File::create(json_path).map_err(|e| ImportError::IoError(e))?;
 
     match excel_type.as_str() {
-        "simple" => {
-            let rows = simple::run(path)?;
-            let j = serde_json::to_string(&rows).map_err(|err| ImportError::Serialize(err))?;
-            println!("{}", j)
-        }
-        "generated" => {
-            let rows = generated::run(path)?;
-
-            let j = serde_json::to_string(&rows).map_err(|err| ImportError::Serialize(err))?;
-            println!("{}", j);
-        }
         "mye_datentraeger" => {
             let rows = datentraeger::run(path)?;
             let mut meta: HashMap<String, String> = HashMap::new();
