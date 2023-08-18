@@ -1,12 +1,12 @@
+#[cfg(test)]
+mod tests;
+
 use crate::ImportError;
 use calamine::{open_workbook_auto, DataType, Reader};
 use chrono::NaiveDate;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::fmt::Debug;
-
-#[cfg(test)]
-mod tests;
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
