@@ -98,11 +98,7 @@ fn main() {
     let file = File::open(path).unwrap();
     let definition: Definition = serde_json::from_reader(file).unwrap();
 
-    let mut data = TemplateContext {
-        columns: vec![],
-        header_row_number: definition.header_row_number,
-        data_start_row_number: definition.data_start_row_number,
-    };
+    let mut columns: Vec<Column> = Vec::new();
 
     for (key, column) in definition.columns.iter() {
         // todo stupido
@@ -114,8 +110,15 @@ fn main() {
             key: key.to_string(),
         };
 
-        data.columns.push(Column::from(c))
+        columns.push(Column::from(c))
     }
+    columns.sort_by_key(|c| c.field_name.clone());
+
+    let data = TemplateContext {
+        columns,
+        header_row_number: definition.header_row_number - 1,
+        data_start_row_number: definition.data_start_row_number - 1,
+    };
 
     let tera = match Tera::new("templates/**/*.tera") {
         Ok(t) => t,
