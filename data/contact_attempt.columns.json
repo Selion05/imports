@@ -1,9 +1,12 @@
 {
-  "groupKey": "supplierCustomerId",
+  "groupKey": "projectContactId",
+  "headerRowNumber": 1,
+  "dataStartRowNumber": 2,
   "columns": {
     "contactType": {
       "name": "contactType",
-      "type": "string"
+      "type": "enum",
+      "enum": "contact_type::ContactType"
     },
     "createdBy": {
       "name": "createdBy",
@@ -19,11 +22,13 @@
     },
     "rating": {
       "name": "Bewertung",
-      "type": "string"
+      "type": "enum",
+      "enum": "rating::Rating"
     },
     "result": {
       "name": "Ergebnis",
-      "type": "string"
+      "type": "enum",
+      "enum": "result::Result_"
     },
     "retry_date": {
       "name": "Wiedervorlage Datum",
@@ -31,11 +36,12 @@
     },
     "retry_time": {
       "name": "Wiedervorlage Zeit",
-      "type": "string"
+      "type": "time"
     },
     "status": {
       "name": "status",
-      "type": "string"
+      "type": "enum",
+      "enum": "status::Status"
     }
   }
 }
