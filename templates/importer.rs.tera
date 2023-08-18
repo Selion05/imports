@@ -5,6 +5,10 @@ use serde::Serialize;
 use std::fmt::Debug;
 use std::collections::HashMap;
 
+#[cfg(test)]
+mod tests;
+
+
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Row {
