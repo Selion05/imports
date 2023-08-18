@@ -1,5 +1,7 @@
 {
   "groupKey": "supplierCustomerId",
+  "headerRowNumber": 1,
+  "dataStartRowNumber": 2,
   "columns": {
     "affiliate": { "name": "Zugehörigkeit", "type": "string" },
     "bill_addition": { "name": "R-Zusatz", "type": "string" },
@@ -57,7 +59,7 @@
     "mp_zip": { "name": "A-Postleitzahl", "name2": "A-PLZ", "type": "string" },
     "name": { "name": "Name1", "type": "string" },
     "nameAdd": { "name": "Name2", "type": "string" },
-    "outDate": { "name": "Auszugsdatum", "type": "date" },
+    "outDate": { "name": "Auszugsdatum", "type": "date", "optional": true    },
     "poolCustomerId": {
       "name": "Poolbetreiber-Kundennummer",
       "type": "string"
