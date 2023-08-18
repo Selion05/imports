@@ -26,7 +26,13 @@ struct ColumnDefinition {
 impl ColumnDefinition {
     fn type_hint(&self) -> String {
         let mut t = match self.kind.as_str() {
-            "date" => "NaiveDate".to_string(),
+            "date" => {
+                return if self.optional {
+                    "Option<NaiveDate>".to_string()
+                } else {
+                    "NaiveDate".to_string()
+                }
+            }
             "float" => "f64".to_string(),
             "string" => "String".to_string(),
             _ => {
