@@ -17,10 +17,10 @@ pub struct Row {
     meterpoint: String,
     valid_from: NaiveDate,
     valid_to: NaiveDate,
-    price: f64,
+    price: String,
     _type: String,
     billing_amount: f64,
-    net_amount: f64,
+    net_amount: String,
     contract_account: String,
 }
 
@@ -232,14 +232,9 @@ fn transform_row(
             })?,
 
         price: row[column_map[Column::Price.usize()]]
-            .get_float()
-            .ok_or_else(|| {
-                ImportError::ValueError(
-                    row_number,
-                    "Preisbetrag".to_string(),
-                    "Cell has no value".to_string(),
-                )
-            })?,
+            .to_string()
+            .trim()
+            .to_string(),
 
         _type: row[column_map[Column::Type.usize()]]
             .to_string()
@@ -255,17 +250,10 @@ fn transform_row(
                     "Cell has no value".to_string(),
                 )
             })?,
-
         net_amount: row[column_map[Column::NetAmount.usize()]]
-            .get_float()
-            .ok_or_else(|| {
-                ImportError::ValueError(
-                    row_number,
-                    "Nettobetrag".to_string(),
-                    "Cell has no value".to_string(),
-                )
-            })?,
-
+            .to_string()
+            .trim()
+            .to_string(),
         contract_account: row[column_map[Column::ContractAccount.usize()]]
             .to_string()
             .trim()
@@ -295,9 +283,6 @@ mod tests {
 
         assert_eq!(rows.len(), 4);
 
-        // todo parse currency as string not as float :/
-        assert_eq!(rows[0].net_amount, 13.35092);
-
         assert_eq!(rows[0].billing_amount, 30343.0);
         assert_eq!(rows[0].contract_account, "123456789");
         assert_eq!(rows[0].currency, "EUR");
@@ -307,8 +292,8 @@ mod tests {
         );
         assert_eq!(rows[0].meterpoint, "AT0010000000000000001000004107355");
         assert_eq!(rows[0].name, "Company");
-        assert_eq!(rows[0].net_amount, 13.35092);
-        assert_eq!(rows[0].price, 0.00044);
+        assert_eq!(rows[0].net_amount, "13.35092".to_string());
+        assert_eq!(rows[0].price, "0.00044".to_string());
         assert_eq!(rows[0].print_receipt, "300051234");
         assert_eq!(rows[0].stgrbt, "SBPROV");
         assert_eq!(rows[0].supplier_customer_id, "123456789");
@@ -322,8 +307,8 @@ mod tests {
             NaiveDate::from_ymd_opt(2021, 12, 31).unwrap()
         );
 
-        assert_eq!(rows[1].net_amount, 8.0);
-        assert_eq!(rows[2].net_amount, 87.1299);
-        assert_eq!(rows[3].net_amount, 159.8535);
+        assert_eq!(rows[1].net_amount, "8".to_string());
+        assert_eq!(rows[2].net_amount, "87.1299".to_string());
+        assert_eq!(rows[3].net_amount, "159.8535".to_string());
     }
 }
