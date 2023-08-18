@@ -7,7 +7,7 @@ mod kam;
 mod sap;
 mod simple;
 
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::Utc;
 use regex::Regex;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -152,10 +152,30 @@ fn run(excel_type: String, path: String) -> Result<(), ImportError> {
             serde_json::to_writer(json_writer, &s).map_err(|err| ImportError::Serialize(err))?;
         }
         "mye_kam" => {
-            let rows = kam::run(path)?;
+            let rows = kam::run(path.clone())?;
 
             let mut meta: HashMap<String, String> = HashMap::new();
             meta.insert("created_at".to_string(), Utc::now().to_string());
+
+            let re = Regex::new(r".*enelteco-kam-(?P<timeframe>[0-9]{4}-[0-9]{2}-[0-9]{2})\.xlsx?")
+                .unwrap();
+
+            let timeframe = re.captures(path.as_str()).and_then(|cap| {
+                cap.name("timeframe")
+                    .map(|timeframe| timeframe.as_str().to_string())
+            });
+
+            match timeframe {
+                Some(timeframe) => {
+                    meta.insert("timeframe".to_string(), timeframe);
+                }
+                None => {
+                    return Err(ImportError::Error(
+                        "Could not extract timeframe from path".to_string(),
+                    ))
+                }
+            }
+
             let s = Schema {
                 messages: rows.values().collect(),
                 meta,
