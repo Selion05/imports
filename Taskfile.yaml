@@ -25,5 +25,5 @@ tasks:
   generate:
     desc: 'generate importer. Usage: task generate -- <NAME>'
     cmds:
-      - cargo run --bin create-import var/{{ .CLI_ARGS }}.columns.json > src/{{ .CLI_ARGS }}/mod.rs
+      - cargo run --bin create-import data/{{ .CLI_ARGS }}.columns.json > src/{{ .CLI_ARGS }}/mod.rs
       - rustfmt --edition 2021 src/main.rs

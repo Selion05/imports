@@ -1,0 +1,41 @@
+{
+  "groupKey": "supplierCustomerId",
+  "columns": {
+    "contactType": {
+      "name": "contactType",
+      "type": "string"
+    },
+    "createdBy": {
+      "name": "createdBy",
+      "type": "string"
+    },
+    "feedback": {
+      "name": "Rückmeldung",
+      "type": "string"
+    },
+    "projectContactId": {
+      "name": "projectContactId",
+      "type": "string"
+    },
+    "rating": {
+      "name": "Bewertung",
+      "type": "string"
+    },
+    "result": {
+      "name": "Ergebnis",
+      "type": "string"
+    },
+    "retry_date": {
+      "name": "Wiedervorlage Datum",
+      "type": "date"
+    },
+    "retry_time": {
+      "name": "Wiedervorlage Zeit",
+      "type": "string"
+    },
+    "status": {
+      "name": "status",
+      "type": "string"
+    }
+  }
+}

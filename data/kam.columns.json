@@ -1,0 +1,96 @@
+{
+  "groupKey": "supplierCustomerId",
+  "columns": {
+    "affiliate": { "name": "Zugehörigkeit", "type": "string" },
+    "bill_addition": { "name": "R-Zusatz", "type": "string" },
+    "bill_city": { "name": "R-Ort", "type": "string" },
+    "bill_number": { "name": "R-Hausnummer", "type": "string" },
+    "bill_street": { "name": "R-Straße", "type": "string" },
+    "bill_zip": {
+      "name": "R-Postleitzahl",
+      "name2": "R-PLZ",
+      "type": "string"
+    },
+    "billingType": { "name": "Abrechnungsklasse", "type": "string" },
+    "consumptionAtChange": {
+      "name": "Wert bei Wechsel kWh",
+      "name2": "Jahresverbrauch bei Wechsel kWh",
+      "type": "float"
+    },
+    "consumptionForecast": {
+      "name": "aktueller Prognosewert kWh",
+      "name2": "Prognosewert kWh",
+      "type": "float"
+    },
+    "contract": { "name": "Vertrag", "type": "string" },
+    "contractAccount": { "name": "Vertragskonto", "type": "string" },
+    "correspondingBillReceiver": {
+      "name": "Korresp. Empfänger",
+      "name2": "Korrespondenzempfänger",
+      "type": "string"
+    },
+    "deviantBillReceiver": {
+      "name": "Abw.Rechnungsempfg",
+      "name2": "abw Rechnungsempfänger",
+      "type": "string"
+    },
+    "eInvoice": {
+      "name": "E-Rechnung ZPDF=ja",
+      "name2": "E-Mail Rechnung ZPDF=JA",
+      "type": "string"
+    },
+    "energyType": { "name": "Serviceart", "name2": "Sparte", "type": "string" },
+    "gridBillingIntegrated": {
+      "name": "VorleistungsmodellNetz",
+      "type": "string"
+    },
+    "inDate": { "name": "Einzugsdatum", "type": "date" },
+    "meterpoint": {
+      "name": "Zählpunktbezeichnung",
+      "name2": "Zählpunkt",
+      "type": "string"
+    },
+    "mp_addition": { "name": "Lagezusatz", "type": "string" },
+    "mp_city": { "name": "A-Ort", "type": "string" },
+    "mp_number": { "name": "A-Hausnummer", "type": "string" },
+    "mp_street": { "name": "A-Straße", "type": "string" },
+    "mp_zip": { "name": "A-Postleitzahl", "name2": "A-PLZ", "type": "string" },
+    "name": { "name": "Name1", "type": "string" },
+    "nameAdd": { "name": "Name2", "type": "string" },
+    "outDate": { "name": "Auszugsdatum", "type": "date" },
+    "poolCustomerId": {
+      "name": "Poolbetreiber-Kundennummer",
+      "type": "string"
+    },
+    "profile": {
+      "name": "Bez. des Profils",
+      "name2": "Lastprofil",
+      "type": "string"
+    },
+    "readUnit": { "name": "Ableseeinheit", "type": "string" },
+    "sepa": {
+      "name": "SEPA hinterlegt E=JA",
+      "name2": "Sepa",
+      "type": "string"
+    },
+    "sepaBlocked": {
+      "name": "SEPA gesperrt",
+      "name2": "SEPA Sperre",
+      "type": "string"
+    },
+    "supplierCustomerGroupId": {
+      "name": "Gruppenkopf_AV",
+      "name2": "Gruppenkopf",
+      "type": "string"
+    },
+    "supplierCustomerGroupName": {
+      "name": "Gruppenkopf_AV_Name",
+      "name2": "Name-Gruppenkopf",
+      "type": "string"
+    },
+    "supplierCustomerId": { "name": "Geschäftspartner", "type": "string" },
+    "supplierMeterpointId": { "name": "Anlage", "type": "string" },
+    "tariffTyp": { "name": "Tariftyp", "type": "string" }
+  },
+  "headerCheckMaxRows": 1
+}

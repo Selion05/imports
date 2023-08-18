@@ -1,0 +1,87 @@
+{
+  "groupKey": "supplierCustomerId",
+  "columns": {
+    "addition": { "name": "Zusatz", "type": "string" },
+    "city": { "name": "Ort", "type": "string" },
+    "commissionPrice": {
+      "name": "Provisionspreis Energie Cent/kWh",
+      "type": "float"
+    },
+    "contractAccount": { "name": "VK MyE", "type": "string" },
+    "energyAmount": { "name": "Energie €/Betrag", "type": "float" },
+    "energyBaseAmount": {
+      "name": "Grundpreis Energie €/Betrag",
+      "type": "float"
+    },
+    "energyBasePrice": {
+      "name": "Grundpreis Energie €/Monat",
+      "type": "float"
+    },
+    "energyConsumption": { "name": "Energie kWh", "type": "float" },
+    "energyContract": { "name": "E-Vertrag", "type": "string" },
+    "energyFee": { "name": "Energieabgabe Betr.", "type": "float" },
+    "energyLawAmount": { "name": "EEffG €/Betrag", "type": "float" },
+    "energyLawPrice": { "name": "EEffG Cent/kWh", "type": "float" },
+    "energyTrancheNetToPay": { "name": "Off.Tb.Ener.Netto", "type": "float" },
+    "energyUsageFee": { "name": "Gebrauchsabgabe Energie", "type": "float" },
+    "entryExitAmount": {
+      "name": "Entry Exit Entgelt €/Betrag",
+      "type": "float"
+    },
+    "entryExitPrice": {
+      "name": "Entry Exit Entgelt Cent/kWh",
+      "type": "float"
+    },
+    "gridBaseAmount": { "name": "Grundpreis Netz €/Betrag", "type": "float" },
+    "gridBasePrice": { "name": "Grundpreis Netz €/Jahr", "type": "float" },
+    "gridConsumption": { "name": "Netzverbrauch Gesamt", "type": "float" },
+    "gridConsumptionHT": { "name": "Netzverbrauch HT", "type": "float" },
+    "gridConsumptionNT": { "name": "Netzverbrauch NT", "type": "float" },
+    "gridContract": { "name": "N-Vertrag", "type": "string" },
+    "gridFee": { "name": "Netzarb./Netzverl./Gebr.abg.", "type": "float" },
+    "gridOperator": { "name": "Netzbetreiber", "type": "string" },
+    "gridPower": { "name": "Netzleistung kW", "type": "float" },
+    "gridPowerAmount": { "name": "Netzleistung Betrag", "type": "float" },
+    "gridTrancheNetToPay": { "name": "Off.Tb.Netz Netto", "type": "float" },
+    "handlingFeeAmount": {
+      "name": "Abwicklungsbeitrag Betrag",
+      "type": "float"
+    },
+    "handlingFeePrice": { "name": "Abwicklungsbeitrag kWh", "type": "float" },
+    "invoice": { "name": "Einzelrechnung", "type": "string" },
+    "invoiceDate": { "name": "Belegdatum", "type": "date" },
+    "invoiceType": { "name": "Belegart", "type": "string" },
+    "meterFee": { "name": "Messpreis/Mieten", "type": "float" },
+    "meterpoint": { "name": "Zählpunktbezeichnung", "type": "string" },
+    "name": { "name": "Name", "type": "string" },
+    "netDue": { "name": "Nettofälligkeit", "type": "date" },
+    "number": { "name": "Hausnummer", "type": "string" },
+    "priceZone": {
+      "name": "Preiszonentrennung €/Betrag",
+      "optional": true,
+      "type": "float"
+    },
+    "proofOfOriginAmount": { "name": "HKN €/Betrag", "type": "float" },
+    "proofOfOriginPrice": { "name": "HKN Cent/kWh", "type": "float" },
+    "reactiveEnergyConsumptionAmount": {
+      "name": "Blindverbrauch Betrag",
+      "type": "float"
+    },
+    "reactiveEnergyConsumptionToPay": {
+      "name": "Blindverbrauch Verr.",
+      "type": "float"
+    },
+    "street": { "name": "Straße", "type": "string" },
+    "supplierCustomerId": { "name": "GP MyE", "type": "string" },
+    "totalVat": { "name": "Netto Ustpf.", "type": "float" },
+    "validFrom": { "name": "Gültig ab", "type": "date" },
+    "validTo": { "name": "Gültig bis", "type": "date" },
+    "vat": { "name": "Umsatzsteuer", "type": "float" },
+    "workingPrice": {
+      "name": "Arbeitspreis Energie Cent/kWh",
+      "type": "float"
+    },
+    "zip": { "name": "PLZ", "type": "string" }
+  },
+  "headerCheckMaxRows": 1
+}

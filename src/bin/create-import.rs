@@ -79,10 +79,13 @@ struct TemplateContext {
     columns: Vec<Column>,
     header_row_number: usize,
     data_start_row_number: usize,
+    group_key: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Definition {
+    #[serde(rename = "groupKey")]
+    group_key: String,
     #[serde(default)]
     #[serde(rename = "dataStartRowNumber")]
     data_start_row_number: usize,
@@ -118,6 +121,7 @@ fn main() {
         columns,
         header_row_number: definition.header_row_number - 1,
         data_start_row_number: definition.data_start_row_number - 1,
+        group_key: definition.group_key.to_case(Case::Snake).trim().to_string(),
     };
 
     let tera = match Tera::new("templates/**/*.tera") {

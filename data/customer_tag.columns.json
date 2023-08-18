@@ -1,0 +1,19 @@
+{
+  "groupKey": "customerId",
+  "columns": {
+    "customerId": {
+      "name": "Kunden ID",
+      "type": "string"
+    },
+    "tagId": {
+      "name": "Tag ID",
+      "type": "string"
+    },
+    "tagValue": {
+      "name": "Tag Wert",
+      "type": "string"
+    }
+  },
+  "dataStartRowNumber": 2,
+  "headerRowNumber": 1
+}

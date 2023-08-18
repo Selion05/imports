@@ -1,0 +1,74 @@
+{
+  "groupKey": "supplierCustomerId",
+  "columns": {
+    "ba": {
+      "name": "BA",
+      "type": "string"
+    },
+    "billingAmount": {
+      "name": "Abrmenge",
+      "type": "float"
+    },
+    "contract": {
+      "name": "Vertrag",
+      "type": "string"
+    },
+    "contractAccount": {
+      "name": "Vertragskont",
+      "type": "string"
+    },
+    "currency": {
+      "name": "TWährg",
+      "type": "string"
+    },
+    "energyType": {
+      "name": "Sp",
+      "type": "string"
+    },
+    "entryDate": {
+      "name": "Buch.dat.",
+      "type": "date"
+    },
+    "invoiceId": {
+      "name": "Druckbeleg",
+      "type": "string"
+    },
+    "lineId": {
+      "name": "BArt",
+      "type": "string"
+    },
+    "meterpoint": {
+      "name": "ZP",
+      "type": "string"
+    },
+    "netAmount": {
+      "name": "Nettobetrag",
+      "type": "float"
+    },
+    "priceAmount": {
+      "name": "Preisbetrag",
+      "type": "float"
+    },
+    "readUnit": {
+      "name": "AblEinh.",
+      "type": "string"
+    },
+    "supplierCustomerId": {
+      "name": "Geschäftspartner",
+      "type": "string"
+    },
+    "tariff": {
+      "name": "Tariftyp",
+      "type": "string"
+    },
+    "validFrom": {
+      "name": "Gültig ab",
+      "type": "date"
+    },
+    "validTo": {
+      "name": "Gültig bis",
+      "type": "date"
+    }
+  },
+  "headerCheckMaxRows": 1
+}

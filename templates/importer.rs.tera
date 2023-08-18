@@ -100,7 +100,7 @@ pub fn run<P: AsRef<std::path::Path>>(path: P) -> Result<HashMap<String, Vec<Row
     let mut groups: HashMap<String, Vec<Row>> = HashMap::new();
     for (i, row) in sheet.rows().enumerate().skip(data_start_row) {
         let r = transform_row(&column_map, row, i)?;
-        let k = r.supplier_customer_id.clone();
+        let k = r.{{ group_key }}.clone();
         if !groups.contains_key(&*k) {
             groups.insert(k.clone(), Vec::new());
         }

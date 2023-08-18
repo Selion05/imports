@@ -1,0 +1,27 @@
+{
+  "groupKey": "supplierCustomerId",
+  "columns": {
+    "billingAmount": { "name": "Abrmenge", "type": "float" },
+    "contractAccount": { "name": "Vertragskonto", "type": "string" },
+    "currency": { "name": "TWährg", "type": "string" },
+    "entryDate": { "name": "Buch.dat.", "type": "date" },
+    "meterpoint": {
+      "name": "Zählpunkt",
+      "name2": "ZP",
+      "type": "string"
+    },
+    "name": { "name": "Name", "type": "string" },
+    "netAmount": { "name": "Nettobetrag", "type": "string" },
+    "price": { "name": "Preisbetrag", "type": "string" },
+    "printReceipt": { "name": "Druckbeleg", "type": "string" },
+    "stgrbt": { "name": "StGrBt", "type": "string" },
+    "supplierCustomerId": { "name": "Geschäftspartner", "type": "string" },
+    "type": { "name": "Sparte", "type": "string" },
+    "validFrom": { "name": "Gültig ab", "type": "date" },
+    "validTo": { "name": "Gültig bis", "type": "date" }
+  },
+  "dataStartRowNumber": 8,
+  "headerCheckMaxRows": 30,
+  "headerRowNumber": 7,
+  "nonEmptyColumns": ["type", "validFrom", "validTo", "entryDate"]
+}
