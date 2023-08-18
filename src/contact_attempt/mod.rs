@@ -2,7 +2,8 @@ mod contact_type;
 mod rating;
 mod result;
 mod status;
-
+#[cfg(test)]
+mod tests;
 use contact_type::ContactType;
 use rating::Rating;
 use result::Result_;
