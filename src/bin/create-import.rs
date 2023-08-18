@@ -21,6 +21,8 @@ struct ColumnDefinition {
     optional: bool,
     #[serde(default)]
     key: String,
+    #[serde(rename = "enum")]
+    enum_: Option<String>,
 }
 
 impl ColumnDefinition {
@@ -33,8 +35,17 @@ impl ColumnDefinition {
                     "NaiveDate".to_string()
                 }
             }
+            "time" => "NaiveTime".to_string(),
             "float" => "f64".to_string(),
             "string" => "String".to_string(),
+            "enum" => self
+                .enum_
+                .clone()
+                .expect(&format!("could not get enum path for {}", self.key))
+                .split("::")
+                .last()
+                .expect(&format!("could not get enum name for {}", self.key))
+                .to_string(),
             _ => {
                 panic!("unknown type {}", self.kind)
             }
@@ -54,6 +65,9 @@ struct Column {
     kind: String,
     type_hint: String,
     enum_name: String,
+    enum_: Option<String>,
+    enum_path: Option<String>,
+    enum_mod: Option<String>,
     match_string: String,
     match_string2: String,
     optional: bool,
@@ -67,6 +81,29 @@ impl From<ColumnDefinition> for Column {
         if field_name == "type".to_string() {
             field_name = "_type".to_string();
         }
+
+        let mut e: Option<String> = None;
+        let mut enum_mod: Option<String> = None;
+        if d.kind == "enum" {
+            e = Some(
+                d.enum_
+                    .clone()
+                    .unwrap()
+                    .split("::")
+                    .last()
+                    .unwrap()
+                    .to_string(),
+            );
+            enum_mod = Some(
+                d.enum_
+                    .clone()
+                    .unwrap()
+                    .split("::")
+                    .next()
+                    .unwrap()
+                    .to_string(),
+            );
+        };
         Column {
             field_name: field_name,
             header_name: d.header_name.clone(),
@@ -76,12 +113,17 @@ impl From<ColumnDefinition> for Column {
             match_string: d.header_name.to_lowercase().trim().to_string(),
             match_string2: d.header_name2.to_lowercase().trim().to_string(),
             optional: d.optional,
+            enum_: e,
+            enum_path: d.enum_.clone(),
+            enum_mod,
         }
     }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 struct TemplateContext {
+    modules: Vec<String>,
+    uses: Vec<String>,
     columns: Vec<Column>,
     header_row_number: usize,
     data_start_row_number: usize,
@@ -108,6 +150,8 @@ fn main() {
     let definition: Definition = serde_json::from_reader(file).unwrap();
 
     let mut columns: Vec<Column> = Vec::new();
+    let mut modules: Vec<String> = Vec::new();
+    let mut uses: Vec<String> = Vec::new();
 
     for (key, column) in definition.columns.iter() {
         // todo stupido
@@ -117,9 +161,26 @@ fn main() {
             kind: column.kind.to_string(),
             optional: column.optional,
             key: key.to_string(),
+            enum_: column.enum_.clone(),
         };
 
-        columns.push(Column::from(c))
+        let column2 = Column::from(c);
+
+        match column2.kind.as_str() {
+            "enum" => {
+                modules.push(column2.enum_mod.clone().unwrap());
+                uses.push(column2.enum_path.clone().unwrap());
+            }
+            "date" => uses.push("chrono::NaiveDate".to_string()),
+            "time" => uses.push("chrono::NaiveTime".to_string()),
+            _ => {}
+        }
+
+        modules.sort();
+        modules.dedup();
+        uses.sort();
+        uses.dedup();
+        columns.push(column2)
     }
     columns.sort_by_key(|c| c.field_name.clone());
 
@@ -128,6 +189,8 @@ fn main() {
         header_row_number: definition.header_row_number - 1,
         data_start_row_number: definition.data_start_row_number - 1,
         group_key: definition.group_key.to_case(Case::Snake).trim().to_string(),
+        modules,
+        uses,
     };
 
     let tera = match Tera::new("templates/**/*.tera") {

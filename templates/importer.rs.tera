@@ -1,13 +1,20 @@
-use crate::ImportError;
-use calamine::{open_workbook_auto, DataType, Reader};
-use chrono::NaiveDate;
-use serde::Serialize;
-use std::fmt::Debug;
-use std::collections::HashMap;
+{%  for mod in modules %}
+mod {{ mod }};
+{%- endfor %}
 
 #[cfg(test)]
 mod tests;
 
+
+use crate::ImportError;
+use calamine::{open_workbook_auto, DataType, Reader};
+use serde::Serialize;
+use std::fmt::Debug;
+use std::collections::HashMap;
+
+{%  for use in uses %}
+use {{ use }};
+{%- endfor %}
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -123,6 +130,16 @@ fn transform_row(
         {% if value.kind == "string" %}
         {{ value.field_name }}: row[column_map[Column::{{ value.enum_name }}.usize()]]
                 .to_string().trim().to_string(),
+        {% elif value.kind =="enum" %}
+        {{ value.field_name }}: {{ value.enum_ }}::from_excel_value(row[column_map[Column::{{ value.enum_name }}.usize()]].to_string())
+        .map_err(|e| ImportError::ValueError(row_number, "{{ value.header_name }}".to_string(), e))?{% if not value.optional %}
+        .ok_or_else(|| {
+        ImportError::ValueError(
+        row_number,
+        "{{ value.header_name }}".to_string(),
+        "Cell has no value".to_string(),
+        )
+        })?,{% endif %}
         {% elif value.kind =="float" %}
         {{ value.field_name }}: row[column_map[Column::{{ value.enum_name }}.usize()]]
                 .get_float(){% if  value.optional %},{% endif %}
@@ -138,6 +155,17 @@ fn transform_row(
         {% elif value.kind =="date" %}
 
         {{ value.field_name }}: row[column_map[Column::{{ value.enum_name }}.usize()]].as_date(){% if value.optional %},{% endif %}
+        {% if not value.optional %}
+        .ok_or_else(|| {
+            ImportError::ValueError(
+                row_number,
+                "{{ value.header_name }}".to_string(),
+                "Cell has no value".to_string(),
+            )
+        })?,{% endif %}
+        {% elif value.kind =="time" %}
+
+        {{ value.field_name }}: row[column_map[Column::{{ value.enum_name }}.usize()]].as_time(){% if value.optional %},{% endif %}
         {% if not value.optional %}
         .ok_or_else(|| {
             ImportError::ValueError(
