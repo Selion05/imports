@@ -1,12 +1,13 @@
+#[cfg(test)]
+mod tests;
+
 use crate::ImportError;
 use calamine::{open_workbook_auto, DataType, Reader};
-use chrono::NaiveDate;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::fmt::Debug;
 
-#[cfg(test)]
-mod tests;
+use chrono::NaiveDate;
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -360,7 +361,6 @@ pub fn run<P: AsRef<std::path::Path>>(path: P) -> Result<HashMap<String, Vec<Row
             groups.insert(k.clone(), Vec::new());
         }
         groups.get_mut(&*k).unwrap().push(r);
-        // rows.push(r);
     }
 
     Ok(groups)
