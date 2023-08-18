@@ -1,5 +1,6 @@
 use crate::ImportError;
 use calamine::{open_workbook_auto, DataType, Reader};
+use chrono::NaiveDate;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::fmt::Debug;
@@ -10,16 +11,16 @@ mod tests;
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Row {
-    tag_value: String,
-    tag_id: String,
     customer_id: String,
+    tag_id: String,
+    tag_value: String,
 }
 
 #[derive(Debug)]
 enum Column {
-    TagValue,
-    TagId,
     CustomerId,
+    TagId,
+    TagValue,
 }
 
 impl Into<usize> for Column {
@@ -38,16 +39,16 @@ fn get_column_map(headers: Vec<String>) -> Result<Vec<usize>, ImportError> {
     let mut map: Vec<Option<usize>> = vec![None; 3];
     for (i, header) in headers.iter().enumerate() {
         match header.to_lowercase().trim() {
-            "tag wert" => {
-                map[<Column as Into<usize>>::into(Column::TagValue)] = Some(i);
+            "kunden id" => {
+                map[<Column as Into<usize>>::into(Column::CustomerId)] = Some(i);
             }
 
             "tag id" => {
                 map[<Column as Into<usize>>::into(Column::TagId)] = Some(i);
             }
 
-            "kunden id" => {
-                map[<Column as Into<usize>>::into(Column::CustomerId)] = Some(i);
+            "tag wert" => {
+                map[<Column as Into<usize>>::into(Column::TagValue)] = Some(i);
             }
 
             _ => return Err(ImportError::UnknownHeader(header.clone())),
@@ -109,10 +110,10 @@ pub fn run<P: AsRef<std::path::Path>>(path: P) -> Result<HashMap<String, Vec<Row
 fn transform_row(
     column_map: &[usize],
     row: &[DataType],
-    _row_number: usize,
+    row_number: usize,
 ) -> Result<Row, ImportError> {
     let r = Row {
-        tag_value: row[column_map[Column::TagValue.usize()]]
+        customer_id: row[column_map[Column::CustomerId.usize()]]
             .to_string()
             .trim()
             .to_string(),
@@ -122,7 +123,7 @@ fn transform_row(
             .trim()
             .to_string(),
 
-        customer_id: row[column_map[Column::CustomerId.usize()]]
+        tag_value: row[column_map[Column::TagValue.usize()]]
             .to_string()
             .trim()
             .to_string(),
