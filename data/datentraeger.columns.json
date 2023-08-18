@@ -1,5 +1,7 @@
 {
   "groupKey": "supplierCustomerId",
+  "headerRowNumber": 1,
+  "dataStartRowNumber": 2,
   "columns": {
     "addition": { "name": "Zusatz", "type": "string" },
     "city": { "name": "Ort", "type": "string" },
