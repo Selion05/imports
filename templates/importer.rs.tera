@@ -138,7 +138,7 @@ fn transform_row(
         "{{ value.header_name }}".to_string(),
         "Cell has no value".to_string(),
         )
-        })?,{% endif %}
+        })?{% endif %},
         {% elif value.kind =="float" %}
         {{ value.field_name }}: row[column_map[Column::{{ value.enum_name }}.usize()]]
                 .get_float(){% if  value.optional %},{% endif %}
