@@ -8,10 +8,11 @@ pub(crate) enum Status {
     Todo,
 }
 impl Status {
-    pub(crate) fn from_excel_value(v: String) -> Result<Status, String> {
+    pub(crate) fn from_excel_value(v: String) -> Result<Option<Status>, String> {
         match v.to_lowercase().trim() {
-            "erledigt" => Ok(Status::Done),
-            "zu erledigen" => Ok(Status::Todo),
+            "erledigt" => Ok(Some(Status::Done)),
+            "zu erledigen" => Ok(Some(Status::Todo)),
+            "" => Ok(None),
             &_ => Err(v),
         }
     }

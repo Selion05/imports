@@ -2,48 +2,50 @@ mod contact_type;
 mod rating;
 mod result;
 mod status;
+
 #[cfg(test)]
 mod tests;
+
+use crate::ImportError;
+use calamine::{open_workbook_auto, DataType, Reader};
+use serde::Serialize;
+use std::collections::HashMap;
+use std::fmt::Debug;
+
+use chrono::NaiveDate;
+use chrono::NaiveDateTime;
+use chrono::NaiveTime;
 use contact_type::ContactType;
 use rating::Rating;
 use result::Result_;
 use status::Status;
 
-use crate::ImportError;
-use calamine::{open_workbook_auto, DataType, Reader};
-use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
-use serde::Serialize;
-use std::collections::HashMap;
-use std::fmt::Debug;
-
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Row {
-    #[serde(skip_serializing)]
-    retry_time: NaiveTime,
-    #[serde(skip_serializing)]
-    retry_date: NaiveDate,
-    retry: Option<NaiveDateTime>,
-    rating: Option<Rating>,
-    project_contact_id: String,
-    status: Status,
-    result: Result_,
     contact_type: ContactType,
     created_by: String,
     feedback: String,
+    project_contact_id: String,
+    rating: Option<Rating>,
+    result: Result_,
+    retry_date: NaiveDate,
+    retry_time: NaiveTime,
+    retry: Option<NaiveDateTime>,
+    status: Status,
 }
 
 #[derive(Debug)]
 enum Column {
-    RetryTime,
-    RetryDate,
-    Rating,
-    ProjectContactId,
-    Status,
-    Result,
     ContactType,
     CreatedBy,
     Feedback,
+    ProjectContactId,
+    Rating,
+    Result,
+    RetryDate,
+    RetryTime,
+    Status,
 }
 
 impl Into<usize> for Column {
@@ -62,30 +64,6 @@ fn get_column_map(headers: Vec<String>) -> Result<Vec<usize>, ImportError> {
     let mut map: Vec<Option<usize>> = vec![None; 9];
     for (i, header) in headers.iter().enumerate() {
         match header.to_lowercase().trim() {
-            "wiedervorlage zeit" => {
-                map[<Column as Into<usize>>::into(Column::RetryTime)] = Some(i);
-            }
-
-            "wiedervorlage datum" => {
-                map[<Column as Into<usize>>::into(Column::RetryDate)] = Some(i);
-            }
-
-            "bewertung" => {
-                map[<Column as Into<usize>>::into(Column::Rating)] = Some(i);
-            }
-
-            "projectcontactid" => {
-                map[<Column as Into<usize>>::into(Column::ProjectContactId)] = Some(i);
-            }
-
-            "status" => {
-                map[<Column as Into<usize>>::into(Column::Status)] = Some(i);
-            }
-
-            "ergebnis" => {
-                map[<Column as Into<usize>>::into(Column::Result)] = Some(i);
-            }
-
             "contacttype" => {
                 map[<Column as Into<usize>>::into(Column::ContactType)] = Some(i);
             }
@@ -96,6 +74,30 @@ fn get_column_map(headers: Vec<String>) -> Result<Vec<usize>, ImportError> {
 
             "rückmeldung" => {
                 map[<Column as Into<usize>>::into(Column::Feedback)] = Some(i);
+            }
+
+            "projectcontactid" => {
+                map[<Column as Into<usize>>::into(Column::ProjectContactId)] = Some(i);
+            }
+
+            "bewertung" => {
+                map[<Column as Into<usize>>::into(Column::Rating)] = Some(i);
+            }
+
+            "ergebnis" => {
+                map[<Column as Into<usize>>::into(Column::Result)] = Some(i);
+            }
+
+            "wiedervorlage datum" => {
+                map[<Column as Into<usize>>::into(Column::RetryDate)] = Some(i);
+            }
+
+            "wiedervorlage zeit" => {
+                map[<Column as Into<usize>>::into(Column::RetryTime)] = Some(i);
+            }
+
+            "status" => {
+                map[<Column as Into<usize>>::into(Column::Status)] = Some(i);
             }
 
             _ => return Err(ImportError::UnknownHeader(header.clone())),
@@ -151,7 +153,6 @@ pub fn run<P: AsRef<std::path::Path>>(path: P) -> Result<HashMap<String, Vec<Row
             groups.insert(k.clone(), Vec::new());
         }
         groups.get_mut(&*k).unwrap().push(r);
-        // rows.push(r);
     }
 
     Ok(groups)
@@ -163,45 +164,17 @@ fn transform_row(
     row_number: usize,
 ) -> Result<Row, ImportError> {
     let r = Row {
-        retry_time: row[column_map[Column::RetryTime.usize()]]
-            .as_time()
-            .ok_or_else(|| {
-                ImportError::ValueError(
-                    row_number,
-                    "Wiedervorlage Datum".to_string(),
-                    "Could not read time".to_string(),
-                )
-            })?,
-
-        retry_date: row[column_map[Column::RetryDate.usize()]]
-            .as_date()
-            .ok_or_else(|| {
-                ImportError::ValueError(
-                    row_number,
-                    "Wiedervorlage Zeit".to_string(),
-                    "Could not read date".to_string(),
-                )
-            })?,
-        retry: None,
-
-        rating: Rating::from_excel_value(row[column_map[Column::Rating.usize()]].to_string())
-            .map_err(|e| ImportError::ValueError(row_number, "Bewertung".to_string(), e))?,
-
-        project_contact_id: row[column_map[Column::ProjectContactId.usize()]]
-            .to_string()
-            .trim()
-            .to_string(),
-
-        status: Status::from_excel_value(row[column_map[Column::Status.usize()]].to_string())
-            .map_err(|e| ImportError::ValueError(row_number, "status".to_string(), e))?,
-
-        result: Result_::from_excel_value(row[column_map[Column::Result.usize()]].to_string())
-            .map_err(|e| ImportError::ValueError(row_number, "Ergebnis".to_string(), e))?,
-
         contact_type: ContactType::from_excel_value(
             row[column_map[Column::ContactType.usize()]].to_string(),
         )
-        .map_err(|e| ImportError::ValueError(row_number, "contactType".to_string(), e))?,
+        .map_err(|e| ImportError::ValueError(row_number, "contactType".to_string(), e))?
+        .ok_or_else(|| {
+            ImportError::ValueError(
+                row_number,
+                "contactType".to_string(),
+                "Cell has no value".to_string(),
+            )
+        })?,
 
         created_by: row[column_map[Column::CreatedBy.usize()]]
             .to_string()
@@ -212,6 +185,55 @@ fn transform_row(
             .to_string()
             .trim()
             .to_string(),
+
+        project_contact_id: row[column_map[Column::ProjectContactId.usize()]]
+            .to_string()
+            .trim()
+            .to_string(),
+
+        rating: Rating::from_excel_value(row[column_map[Column::Rating.usize()]].to_string())
+            .map_err(|e| ImportError::ValueError(row_number, "Bewertung".to_string(), e))?,
+
+        result: Result_::from_excel_value(row[column_map[Column::Result.usize()]].to_string())
+            .map_err(|e| ImportError::ValueError(row_number, "Ergebnis".to_string(), e))?
+            .ok_or_else(|| {
+                ImportError::ValueError(
+                    row_number,
+                    "Ergebnis".to_string(),
+                    "Cell has no value".to_string(),
+                )
+            })?,
+
+        retry_date: row[column_map[Column::RetryDate.usize()]]
+            .as_date()
+            .ok_or_else(|| {
+                ImportError::ValueError(
+                    row_number,
+                    "Wiedervorlage Datum".to_string(),
+                    "Cell has no value".to_string(),
+                )
+            })?,
+
+        retry_time: row[column_map[Column::RetryTime.usize()]]
+            .as_time()
+            .ok_or_else(|| {
+                ImportError::ValueError(
+                    row_number,
+                    "Wiedervorlage Zeit".to_string(),
+                    "Cell has no value".to_string(),
+                )
+            })?,
+        retry: None,
+
+        status: Status::from_excel_value(row[column_map[Column::Status.usize()]].to_string())
+            .map_err(|e| ImportError::ValueError(row_number, "status".to_string(), e))?
+            .ok_or_else(|| {
+                ImportError::ValueError(
+                    row_number,
+                    "status".to_string(),
+                    "Cell has no value".to_string(),
+                )
+            })?,
     };
 
     Ok(r)

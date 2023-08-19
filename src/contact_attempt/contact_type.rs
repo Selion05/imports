@@ -10,11 +10,12 @@ pub(crate) enum ContactType {
     Phone,
 }
 impl ContactType {
-    pub(crate) fn from_excel_value(v: String) -> Result<ContactType, String> {
+    pub(crate) fn from_excel_value(v: String) -> Result<Option<ContactType>, String> {
         match v.to_lowercase().trim() {
-            "email" => Ok(ContactType::Email),
-            "persönlich" => Ok(ContactType::Personally),
-            "telefon" => Ok(ContactType::Phone),
+            "email" => Ok(Some(ContactType::Email)),
+            "persönlich" => Ok(Some(ContactType::Personally)),
+            "telefon" => Ok(Some(ContactType::Phone)),
+            "" => Ok(None),
             &_ => Err(v),
         }
     }

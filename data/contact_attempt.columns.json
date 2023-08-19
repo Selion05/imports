@@ -23,6 +23,7 @@
     "rating": {
       "name": "Bewertung",
       "type": "enum",
+      "optional": true,
       "enum": "rating::Rating"
     },
     "result": {
