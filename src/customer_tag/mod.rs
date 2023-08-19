@@ -109,7 +109,7 @@ pub fn run<P: AsRef<std::path::Path>>(path: P) -> Result<HashMap<String, Vec<Row
 fn transform_row(
     column_map: &[usize],
     row: &[DataType],
-    row_number: usize,
+    _row_number: usize,
 ) -> Result<Row, ImportError> {
     let r = Row {
         customer_id: row[column_map[Column::CustomerId.usize()]]

@@ -4,18 +4,18 @@ tasks:
   default:
     cmds:
       - task -l
-  simple:
-    desc: run simple var/simple.xlsx
-    cmds:
-      - cargo +nightly run simple var/simple.xlsx
   build:
-    desc: run +nightly build
+    desc: run build
     cmds:
-      - cargo +nightly build
+      - cargo build
+  test:
+    desc: run tests
+    cmds:
+      - cargo test
   release:
-    desc: run +nightly build
+    desc: cargo build --release
     cmds:
-      - cargo +nightly build --release
+      - cargo build --release
       - cp target/release/importsctl ../admin/bin/importsctl
   release-enelteco:
     desc: run +nightly build
