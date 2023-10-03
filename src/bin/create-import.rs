@@ -216,5 +216,5 @@ fn main() {
 
     let s = tera.render("importer.rs.tera", &Context::from_serialize(&data).unwrap());
 
-    println!("{}", s.unwrap())
+    println!("{}", s.unwrap());
 }

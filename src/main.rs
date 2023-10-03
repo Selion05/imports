@@ -3,6 +3,7 @@ mod contact_attempt;
 mod customer_tag;
 mod datentraeger;
 mod kam;
+mod meterpoint_value;
 mod sap;
 
 use chrono::Utc;
@@ -172,6 +173,17 @@ fn run(excel_type: String, path: String) -> Result<(), ImportError> {
         }
         "customer_tag" => {
             let rows = customer_tag::run(path)?;
+
+            let mut meta: HashMap<String, String> = HashMap::new();
+            meta.insert("created_at".to_string(), Utc::now().to_string());
+            let s = Schema {
+                messages: rows.values().collect(),
+                meta,
+            };
+            serde_json::to_writer(json_writer, &s).map_err(|err| ImportError::Serialize(err))?;
+        }
+        "mye_meterpoint_value" => {
+            let rows = meterpoint_value::run(path)?;
 
             let mut meta: HashMap<String, String> = HashMap::new();
             meta.insert("created_at".to_string(), Utc::now().to_string());
