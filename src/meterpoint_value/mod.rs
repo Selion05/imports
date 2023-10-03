@@ -1,12 +1,12 @@
 use crate::ImportError;
-use calamine::{open_workbook_auto, Reader};
-use chrono::{NaiveDateTime, SubsecRound};
+use calamine::{open_workbook_auto, DataType, Range, Reader};
+use chrono::NaiveDateTime;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::fmt::Debug;
 
-#[cfg(test)]
-mod tests;
+mod myelectric;
+mod wiener_netze;
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -16,12 +16,49 @@ pub struct Row {
     data: Vec<Vec<Option<f64>>>,
 }
 
+pub enum Schema {
+    MyElectric,
+    WienerNetze,
+    Unknown,
+}
+
+pub fn detect_schema(sheet: Range<DataType>) -> Schema {
+    // wiener netze
+    let ts_check = sheet
+        .get_value((1, 0))
+        .map(|v| v.to_string().trim().to_string());
+    let mp_check = sheet
+        .get_value((1, 1))
+        .map(|v| v.to_string().trim().to_string());
+    let mp2_check = sheet
+        .get_value((6, 1))
+        .map(|v| v.to_string().trim().to_string());
+    let kwh_check = sheet
+        .get_value((13, 1))
+        .map(|v| v.to_string().trim().to_string());
+
+    if ts_check == Some("Zeitpunkt".to_string())
+        && mp_check == Some("Abnahmestelle".to_string())
+        && mp2_check == Some("Zählpunkt".to_string())
+        && kwh_check == Some("Wirkverbrauch_kWh".to_string())
+    {
+        return Schema::WienerNetze;
+    }
+    // myElectric
+    let ts_check = sheet
+        .get_value((0, 0))
+        .map(|v| v.to_string().trim().to_string());
+
+    if ts_check == Some("Timestamp".to_string()) {
+        return Schema::MyElectric;
+    }
+    return Schema::Unknown;
+}
+
 pub fn run<P: AsRef<std::path::Path>>(path: P) -> Result<HashMap<String, Vec<Row>>, ImportError> {
     let mut excel = open_workbook_auto(path)?;
 
     // todo input
-    let header_row = 0;
-    let data_start_row = 1;
     let sheet_names = excel.sheet_names().to_vec();
     let sheet_name = sheet_names.first().unwrap();
 
@@ -29,77 +66,11 @@ pub fn run<P: AsRef<std::path::Path>>(path: P) -> Result<HashMap<String, Vec<Row
         .worksheet_range(sheet_name)
         .ok_or_else(|| ImportError::SheetNotFound(sheet_name.to_string()))??;
 
-    let ts = sheet
-        .rows()
-        .nth(header_row)
-        .unwrap()
-        .iter()
-        .nth(0)
-        .unwrap()
-        .to_string();
-
-    if ts.trim() != "Timestamp" {
-        return Err(ImportError::UnknownHeader(String::from(
-            "Expected Timestamp in A1",
-        )));
-    }
-
-    let headers: Vec<String> = sheet
-        .rows()
-        .nth(header_row)
-        .unwrap()
-        .iter()
-        .skip(1)
-        .map(|header_cell| {
-            return match header_cell.get_string() {
-                None => String::from(""),
-                Some(v) => v[..33].to_string(),
-            };
-        })
-        .collect();
-
-    let mut groups: HashMap<String, Vec<Row>> = HashMap::new();
-
-    let header_cnt = headers.len();
-    let mut r = Row {
-        columns: headers,
-        index: vec![],
-        data: vec![],
+    return match detect_schema(sheet.clone()) {
+        Schema::WienerNetze => wiener_netze::run(sheet),
+        Schema::MyElectric => myelectric::run(sheet),
+        Schema::Unknown => Err(ImportError::Error(
+            "Could not detect schema for meterpoint_value import".to_string(),
+        )),
     };
-
-    for (i, row) in sheet.rows().enumerate().skip(data_start_row) {
-        let summary_row = row[0].to_string();
-        if summary_row == "Summe" || summary_row == "Sum" {
-            println!("found");
-            // meterpoint_value files contain a summary row
-            break;
-        }
-        let date = row[0]
-            .as_datetime()
-            .ok_or_else(|| {
-                ImportError::ValueError(
-                    i,
-                    "Timestamp".to_string(),
-                    "could not parse datetime".to_string(),
-                )
-            })?
-            .round_subsecs(0);
-
-        let values = row
-            .iter()
-            .skip(1)
-            .take(header_cnt)
-            .map(|v| {
-                return v.get_float();
-            })
-            .collect();
-
-        r.index.push(date);
-        r.data.push(values);
-    }
-
-    let k = "all".to_string();
-    groups.insert(k.clone(), vec![r]);
-
-    Ok(groups)
 }
