@@ -22,7 +22,7 @@ pub enum Schema {
     Unknown,
 }
 
-pub fn detect_schema(sheet: Range<DataType>) -> Schema {
+pub fn detect_schema(sheet: &Range<DataType>) -> Schema {
     // wiener netze
     let ts_check = sheet
         .get_value((1, 0))
@@ -58,19 +58,17 @@ pub fn detect_schema(sheet: Range<DataType>) -> Schema {
 pub fn run<P: AsRef<std::path::Path>>(path: P) -> Result<HashMap<String, Vec<Row>>, ImportError> {
     let mut excel = open_workbook_auto(path)?;
 
-    // todo input
-    let sheet_names = excel.sheet_names().to_vec();
-    let sheet_name = sheet_names.first().unwrap();
+    if let Some(Ok(sheet)) = excel.worksheet_range_at(0) {
+        return match detect_schema(&sheet) {
+            Schema::WienerNetze => wiener_netze::run(sheet),
+            Schema::MyElectric => myelectric::run(sheet),
+            Schema::Unknown => Err(ImportError::Error(
+                "Could not detect schema for meterpoint_value import".to_string(),
+            )),
+        };
+    }
 
-    let sheet = excel
-        .worksheet_range(sheet_name)
-        .ok_or_else(|| ImportError::SheetNotFound(sheet_name.to_string()))??;
-
-    return match detect_schema(sheet.clone()) {
-        Schema::WienerNetze => wiener_netze::run(sheet),
-        Schema::MyElectric => myelectric::run(sheet),
-        Schema::Unknown => Err(ImportError::Error(
-            "Could not detect schema for meterpoint_value import".to_string(),
-        )),
-    };
+    return Err(ImportError::Error(
+        "Could not find any sheet in excel".to_string(),
+    ));
 }
