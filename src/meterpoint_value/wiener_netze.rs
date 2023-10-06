@@ -5,33 +5,6 @@ use chrono::SubsecRound;
 use std::collections::HashMap;
 
 pub fn run(sheet: Range<DataType>) -> Result<HashMap<String, Vec<Row>>, ImportError> {
-    let check = sheet.get_value((1, 0)).unwrap();
-    if check.to_string().trim() != "Zeitpunkt" {
-        return Err(ImportError::Error(
-            "Zeitpunkt not found in A2. Not a wiener netze file".to_string(),
-        ));
-    }
-
-    let check = sheet.get_value((1, 1)).unwrap();
-    if check.to_string().trim() != "Abnahmestelle" {
-        return Err(ImportError::Error(
-            "Abnahmestelle not found in B2. Not a wiener netze file".to_string(),
-        ));
-    }
-    let check = sheet.get_value((6, 1)).unwrap();
-    if check.to_string().trim() != "Zählpunkt" {
-        return Err(ImportError::Error(
-            "Zählpunkt not found in B7. Not a wiener netze file".to_string(),
-        ));
-    }
-
-    let check = sheet.get_value((13, 1)).unwrap();
-    if check.to_string().trim() != "Wirkverbrauch_kWh" {
-        return Err(ImportError::Error(
-            "Zählpunkt not found in B7. Not a wiener netze file".to_string(),
-        ));
-    }
-
     let headers: Vec<String> = sheet
         .rows()
         .nth(6)
@@ -93,7 +66,7 @@ mod tests {
 
     #[test]
     fn test_parse_wiener_netze_is_successful() {
-        let result = run("var/meterpoint_value_wiener_netze.xlsx");
+        let result = run("var/meterpoint_value_wiener_netze.xlsx".to_string());
         assert!(result.is_ok());
 
         let result = result.unwrap();

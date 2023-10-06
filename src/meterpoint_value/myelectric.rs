@@ -75,7 +75,7 @@ mod tests {
 
     #[test]
     fn test_parse_myelectric_is_successful() {
-        let result = run("var/meterpoint_value.xlsx");
+        let result = run("var/meterpoint_value.xlsx".to_string());
         assert!(result.is_ok());
 
         let result = result.unwrap();

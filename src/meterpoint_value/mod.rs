@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 
 mod myelectric;
+mod netze_ooe;
 mod wiener_netze;
 
 #[derive(Debug, Serialize)]
@@ -19,6 +20,7 @@ pub struct Row {
 pub enum Schema {
     MyElectric,
     WienerNetze,
+    NetzeOoe,
     Unknown,
 }
 
@@ -44,6 +46,35 @@ pub fn detect_schema(sheet: &Range<DataType>) -> Schema {
     {
         return Schema::WienerNetze;
     }
+
+    let head_check = sheet
+        .get_value((0, 0))
+        .map(|v| v.to_string().trim().to_string());
+    let unit_head_check = sheet
+        .get_value((6, 0))
+        .map(|v| v.to_string().trim().to_string());
+    let unit_check = sheet
+        .get_value((6, 1))
+        .map(|v| v.to_string().trim().to_string());
+    let date_check = sheet
+        .get_value((1, 3))
+        .map(|v| v.to_string().trim().to_string());
+    let time_check = sheet
+        .get_value((1, 4))
+        .map(|v| v.to_string().trim().to_string());
+    let value_check = sheet
+        .get_value((1, 5))
+        .map(|v| v.to_string().trim().to_string());
+    if head_check == Some("Kopfdaten des Profils".to_string())
+        && unit_head_check == Some("Maßeinheit".to_string())
+        && unit_check == Some("kW".to_string())
+        && date_check == Some("Ab-Datum".to_string())
+        && time_check == Some("Ab-Zeit".to_string())
+        && value_check == Some("Profilwert".to_string())
+    {
+        return Schema::NetzeOoe;
+    }
+
     // myElectric
     let ts_check = sheet
         .get_value((0, 0))
@@ -55,13 +86,14 @@ pub fn detect_schema(sheet: &Range<DataType>) -> Schema {
     return Schema::Unknown;
 }
 
-pub fn run<P: AsRef<std::path::Path>>(path: P) -> Result<HashMap<String, Vec<Row>>, ImportError> {
-    let mut excel = open_workbook_auto(path)?;
+pub fn run(path: String) -> Result<HashMap<String, Vec<Row>>, ImportError> {
+    let mut excel = open_workbook_auto(path.clone())?;
 
     if let Some(Ok(sheet)) = excel.worksheet_range_at(0) {
         return match detect_schema(&sheet) {
             Schema::WienerNetze => wiener_netze::run(sheet),
             Schema::MyElectric => myelectric::run(sheet),
+            Schema::NetzeOoe => netze_ooe::run(sheet, path),
             Schema::Unknown => Err(ImportError::Error(
                 "Could not detect schema for meterpoint_value import".to_string(),
             )),
