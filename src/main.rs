@@ -30,7 +30,7 @@ pub enum ImportError {
 
 #[derive(Debug, Serialize)]
 struct Schema<T: Serialize> {
-    messages: Vec<T>,
+    messages: T,
     meta: HashMap<String, String>,
 }
 
@@ -89,7 +89,7 @@ fn run(excel_type: String, path: String) -> Result<(), ImportError> {
             let rows = datentraeger::run(path)?;
             let mut meta: HashMap<String, String> = HashMap::new();
             meta.insert("created_at".to_string(), Utc::now().to_string());
-            let s = Schema {
+            let s: Schema<Vec<&Vec<datentraeger::Row>>> = Schema {
                 messages: rows.values().collect(),
                 meta,
             };
@@ -120,7 +120,7 @@ fn run(excel_type: String, path: String) -> Result<(), ImportError> {
                 }
             }
 
-            let s = Schema {
+            let s: Schema<Vec<&Vec<commission::Row>>> = Schema {
                 messages: rows.values().collect(),
                 meta,
             };
@@ -132,7 +132,7 @@ fn run(excel_type: String, path: String) -> Result<(), ImportError> {
 
             let mut meta: HashMap<String, String> = HashMap::new();
             meta.insert("created_at".to_string(), Utc::now().to_string());
-            let s = Schema {
+            let s: Schema<Vec<&Vec<sap::Row>>> = Schema {
                 messages: rows.values().collect(),
                 meta,
             };
@@ -164,7 +164,7 @@ fn run(excel_type: String, path: String) -> Result<(), ImportError> {
                 }
             }
 
-            let s = Schema {
+            let s: Schema<Vec<&Vec<kam::Row>>> = Schema {
                 messages: rows.values().collect(),
                 meta,
             };
@@ -176,7 +176,7 @@ fn run(excel_type: String, path: String) -> Result<(), ImportError> {
 
             let mut meta: HashMap<String, String> = HashMap::new();
             meta.insert("created_at".to_string(), Utc::now().to_string());
-            let s = Schema {
+            let s: Schema<Vec<&Vec<customer_tag::Row>>> = Schema {
                 messages: rows.values().collect(),
                 meta,
             };
@@ -187,7 +187,7 @@ fn run(excel_type: String, path: String) -> Result<(), ImportError> {
 
             let mut meta: HashMap<String, String> = HashMap::new();
             meta.insert("created_at".to_string(), Utc::now().to_string());
-            let s = Schema {
+            let s: Schema<Vec<&Vec<meterpoint_value::Row>>> = Schema {
                 messages: rows.values().collect(),
                 meta,
             };
@@ -198,7 +198,7 @@ fn run(excel_type: String, path: String) -> Result<(), ImportError> {
 
             let mut meta: HashMap<String, String> = HashMap::new();
             meta.insert("created_at".to_string(), Utc::now().to_string());
-            let s = Schema {
+            let s: Schema<Vec<&Vec<contact_attempt::Row>>> = Schema {
                 messages: rows.values().collect(),
                 meta,
             };
