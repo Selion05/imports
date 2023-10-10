@@ -1,8 +1,7 @@
-use crate::meterpoint_value::Row;
+use crate::meterpoint_value::Data;
 use crate::ImportError;
 use calamine::{DataType, Range};
 use chrono::SubsecRound;
-use std::collections::HashMap;
 
 fn meterpoint_label(path: String) -> Result<String, String> {
     let p = std::path::Path::new(path.as_str());
@@ -30,14 +29,13 @@ fn meterpoint_label(path: String) -> Result<String, String> {
     return Ok(meterpoint);
 }
 
-pub fn run(sheet: Range<DataType>, path: String) -> Result<HashMap<String, Vec<Row>>, ImportError> {
+pub fn run(sheet: Range<DataType>, path: String) -> Result<Data, ImportError> {
     let meterpoint = meterpoint_label(path).map_err(|e| ImportError::Error(e))?;
-    let mut groups: HashMap<String, Vec<Row>> = HashMap::new();
 
     println!("{:?}", meterpoint);
     let headers: Vec<String> = vec![meterpoint];
 
-    let mut r = Row {
+    let mut r = Data {
         columns: headers,
         index: vec![],
         data: vec![],
@@ -69,10 +67,7 @@ pub fn run(sheet: Range<DataType>, path: String) -> Result<HashMap<String, Vec<R
         r.data.push(vec![value]);
     }
 
-    let k = "all".to_string();
-    groups.insert(k.clone(), vec![r]);
-
-    Ok(groups)
+    Ok(r)
 }
 
 #[cfg(test)]
@@ -88,27 +83,16 @@ mod tests {
         println!("{:?}", result);
         assert!(result.is_ok());
 
-        let result = result.unwrap();
-
-        // let rows = result.get("2022-10-01");
-        let rows = result.get("all");
-
-        assert!(rows.is_some());
-
-        let rows = rows.unwrap();
-
-        assert_eq!(rows.len(), 1);
-
-        let row = rows.get(0).unwrap();
+        let data = result.unwrap();
 
         assert_eq!(
-            row.columns,
+            data.columns,
             vec![String::from("AT0030000000000000000000000001234"),]
         );
 
         let d = NaiveDate::from_ymd_opt(2023, 1, 5).unwrap();
         assert_eq!(
-            row.index,
+            data.index,
             vec![
                 d.and_hms_opt(0, 00, 0).unwrap(),
                 d.and_hms_opt(0, 15, 0).unwrap(),
@@ -125,7 +109,7 @@ mod tests {
         );
 
         assert_eq!(
-            row.data,
+            data.data,
             vec![
                 vec![Some(1.623)],
                 vec![Some(1.482)],

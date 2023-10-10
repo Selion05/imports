@@ -187,8 +187,8 @@ fn run(excel_type: String, path: String) -> Result<(), ImportError> {
 
             let mut meta: HashMap<String, String> = HashMap::new();
             meta.insert("created_at".to_string(), Utc::now().to_string());
-            let s: Schema<Vec<&Vec<meterpoint_value::Row>>> = Schema {
-                messages: rows.values().collect(),
+            let s = Schema {
+                messages: vec![rows],
                 meta,
             };
             serde_json::to_writer(json_writer, &s).map_err(|err| ImportError::Serialize(err))?;

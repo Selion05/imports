@@ -2,16 +2,16 @@ use crate::ImportError;
 use calamine::{open_workbook_auto, DataType, Range, Reader};
 use chrono::NaiveDateTime;
 use serde::Serialize;
-use std::collections::HashMap;
 use std::fmt::Debug;
 
 mod myelectric;
+mod netze_noe;
 mod netze_ooe;
 mod wiener_netze;
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Row {
+pub struct Data {
     columns: Vec<String>,
     index: Vec<NaiveDateTime>,
     data: Vec<Vec<Option<f64>>>,
@@ -21,6 +21,7 @@ pub enum Schema {
     MyElectric,
     WienerNetze,
     NetzeOoe,
+    NetzeNoe,
     Unknown,
 }
 
@@ -83,10 +84,17 @@ pub fn detect_schema(sheet: &Range<DataType>) -> Schema {
     if ts_check == Some("Timestamp".to_string()) {
         return Schema::MyElectric;
     }
+    let head_check = sheet
+        .get_value((0, 0))
+        .map(|v| v.to_string().trim().to_string());
+
+    if head_check == Some("Werte in kW".to_string()) {
+        return Schema::NetzeNoe;
+    }
     return Schema::Unknown;
 }
 
-pub fn run(path: String) -> Result<HashMap<String, Vec<Row>>, ImportError> {
+pub fn run(path: String) -> Result<Data, ImportError> {
     let mut excel = open_workbook_auto(path.clone())?;
 
     if let Some(Ok(sheet)) = excel.worksheet_range_at(0) {
@@ -94,6 +102,7 @@ pub fn run(path: String) -> Result<HashMap<String, Vec<Row>>, ImportError> {
             Schema::WienerNetze => wiener_netze::run(sheet),
             Schema::MyElectric => myelectric::run(sheet),
             Schema::NetzeOoe => netze_ooe::run(sheet, path),
+            Schema::NetzeNoe => netze_noe::run(sheet),
             Schema::Unknown => Err(ImportError::Error(
                 "Could not detect schema for meterpoint_value import".to_string(),
             )),

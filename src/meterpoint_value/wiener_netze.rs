@@ -1,10 +1,9 @@
-use crate::meterpoint_value::Row;
+use crate::meterpoint_value::Data;
 use crate::ImportError;
 use calamine::{DataType, Range};
 use chrono::SubsecRound;
-use std::collections::HashMap;
 
-pub fn run(sheet: Range<DataType>) -> Result<HashMap<String, Vec<Row>>, ImportError> {
+pub fn run(sheet: Range<DataType>) -> Result<Data, ImportError> {
     let headers: Vec<String> = sheet
         .rows()
         .nth(6)
@@ -19,10 +18,8 @@ pub fn run(sheet: Range<DataType>) -> Result<HashMap<String, Vec<Row>>, ImportEr
         })
         .collect();
 
-    let mut groups: HashMap<String, Vec<Row>> = HashMap::new();
-
     let header_cnt = headers.len();
-    let mut r = Row {
+    let mut r = Data {
         columns: headers,
         index: vec![],
         data: vec![],
@@ -53,10 +50,7 @@ pub fn run(sheet: Range<DataType>) -> Result<HashMap<String, Vec<Row>>, ImportEr
         r.data.push(values);
     }
 
-    let k = "all".to_string();
-    groups.insert(k.clone(), vec![r]);
-
-    Ok(groups)
+    Ok(r)
 }
 
 #[cfg(test)]
@@ -69,21 +63,10 @@ mod tests {
         let result = run("var/meterpoint_value_wiener_netze.xlsx".to_string());
         assert!(result.is_ok());
 
-        let result = result.unwrap();
-
-        // let rows = result.get("2022-10-01");
-        let rows = result.get("all");
-
-        assert!(rows.is_some());
-
-        let rows = rows.unwrap();
-
-        assert_eq!(rows.len(), 1);
-
-        let row = rows.get(0).unwrap();
+        let data = result.unwrap();
 
         assert_eq!(
-            row.columns,
+            data.columns,
             vec![
                 String::from("AT0010000000000000001000001234567"),
                 String::from("AT0010000000000000001000001234568"),
@@ -92,7 +75,7 @@ mod tests {
 
         let d = NaiveDate::from_ymd_opt(2021, 1, 1).unwrap();
         assert_eq!(
-            row.index,
+            data.index,
             vec![
                 d.and_hms_opt(0, 15, 0).unwrap(),
                 d.and_hms_opt(0, 30, 0).unwrap(),
@@ -102,7 +85,7 @@ mod tests {
         );
 
         assert_eq!(
-            row.data,
+            data.data,
             vec![
                 vec![Some(1.32 / 4.0), Some(2.32 / 4.0)],
                 vec![Some(0.51 / 4.0), Some(1.51 / 4.0)],
