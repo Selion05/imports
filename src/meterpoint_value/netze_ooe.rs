@@ -2,6 +2,7 @@ use crate::meterpoint_value::Data;
 use crate::ImportError;
 use calamine::{DataType, Range};
 use chrono::SubsecRound;
+use regex::Regex;
 
 fn meterpoint_label(path: String) -> Result<String, String> {
     let p = std::path::Path::new(path.as_str());
@@ -13,6 +14,15 @@ fn meterpoint_label(path: String) -> Result<String, String> {
         .trim()
         .to_uppercase();
     println!("{:?}", filename);
+
+    let re = Regex::new(r"^LASTPROFIL[-\s]?([A-Z]{2}[A-Z0-9]{31}).*\.XLSX$").unwrap();
+
+    if let Some(captures) = re.captures(filename.as_str()) {
+        if let Some(meterpoint) = captures.get(1) {
+            return Ok(meterpoint.as_str().to_string());
+        }
+    }
+
     let meterpoint: String = filename
         .strip_prefix("LASTPROFIL")
         .ok_or_else(|| "filename has no prefix lastprofil".to_string())?
@@ -151,6 +161,14 @@ mod tests {
             (
                 "test/lastprofil AT123456789123456789123456789123.xlsx".to_string(),
                 Err("could not get meterpoint from filename 'test/lastprofil AT123456789123456789123456789123.xlsx'".to_string()),
+            ),
+            (
+                "lastprofil-at0300000000000000000000001234567-2020.xlsx".to_string(),
+                Ok("AT0300000000000000000000001234567".to_string()),
+            ),
+            (
+                "lastprofil-at0030000000000000000000000012345-2019(1).xlsx".to_string(),
+                Ok("AT0030000000000000000000000012345".to_string()),
             ),
             ("".to_string(), Err("path has no filename".to_string())),
         ] {
